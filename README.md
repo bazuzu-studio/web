@@ -52,6 +52,19 @@ pnpm dev
 
 > Для полноценной работы (реальные данные, а не заглушки) должен быть запущен `apps/cms` на `http://localhost:4000`.
 
+## Деплой в Dokploy
+
+1. Один раз локально сгенерируйте типы и **закоммитьте** результат (сборка не должна зависеть от CMS, а в продакшене у Payload обычно отключена интроспекция GraphQL):
+   ```bash
+   pnpm install
+   pnpm codegen        # нужен запущенный apps/cms
+   git add src/generated/graphql.ts pnpm-lock.yaml
+   ```
+2. Создайте сервис **Compose** в проекте Dokploy: репозиторий с этим кодом, ветка `main`, Compose Path `./docker-compose.yml`.
+3. Во вкладке **Environment** задайте `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_GRAPHQL_API_URL`, `S3_PUBLIC_URL` (см. `.env.example`). `NEXT_PUBLIC_*` вшиваются в бандл при сборке, поэтому после их изменения нужен **Deploy** (пересборка), а не Reload.
+4. Во вкладке **Domains**: Host `otakuum.ru`, Service Name `web`, Port `3000`, HTTPS + Let's Encrypt (то же для `www`, если нужно).
+5. Авторизация (cookie `payload-token` + `credentials: 'include'`): в `apps/cms` cookie должна быть доступна сайту, то есть `auth.cookies.domain = '.otakuum.ru'`, `secure: true`, `sameSite: 'Lax'`, а `cors` и `csrf` содержат `https://otakuum.ru`.
+
 ## Скрипты
 
 | Команда | Описание |

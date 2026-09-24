@@ -12,13 +12,20 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  const { items } = await getContentList(1, 100);
+  // Сборка не должна зависеть от доступности CMS: при ошибке страницы
+  // просто рендерятся по запросу (dynamicParams по умолчанию включён).
+  try {
+    const { items } = await getContentList(1, 100);
 
-  return items
-    .filter((content) => content.type === "series")
-    .map((content) => ({
-      slug: content.slug,
-    }));
+    return items
+      .filter((content) => content.type === "series")
+      .map((content) => ({
+        slug: content.slug,
+      }));
+  } catch (error) {
+    console.error("generateStaticParams(series): CMS недоступен, пропускаем", error);
+    return [];
+  }
 }
 
 export async function generateMetadata({
