@@ -11,7 +11,7 @@ import { CatalogClient } from "@/components/pages/CatalogClient";
 export const metadata: Metadata = {
   title: "Каталог фильмов и сериалов",
   description:
-    "Все фильмы и сериалы CineHub с фильтрами по жанру, году и рейтингу.",
+    "Все фильмы и сериалы otakuum с фильтрами по жанру, году и рейтингу.",
 };
 
 interface Props {

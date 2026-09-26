@@ -20,13 +20,13 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "CineHub — фильмы и сериалы",
-    template: "%s · CineHub",
+    default: "otakuum — фильмы и сериалы",
+    template: "%s · otakuum",
   },
-  description: "Премиальный каталог фильмов и сериалов CineHub. Смотрите описания, рейтинги и добавляйте в избранное.",
+  description: "Премиальный каталог фильмов и сериалов otakuum. Смотрите описания, рейтинги и добавляйте в избранное.",
   openGraph: {
     type: "website",
-    siteName: "CineHub",
+    siteName: "otakuum",
   },
 };
 

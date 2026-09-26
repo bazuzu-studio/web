@@ -52,7 +52,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   return (
     <AuthLayout>
       <h1 className="text-2xl font-bold text-white mb-1">Создайте аккаунт</h1>
-      <p className="text-sm text-[#71717A] mb-6">Присоединяйтесь к CineHub</p>
+      <p className="text-sm text-[#71717A] mb-6">Присоединяйтесь к otakuum</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {[

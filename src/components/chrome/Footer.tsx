@@ -32,8 +32,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-white/6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-[#3f3f46]">© 2026 CineHub. Концепт. Все права защищены.</p>
-          <p className="text-xs text-[#3f3f46]">Только для просмотра. Видеоплеер не предусмотрен в MVP.</p>
+          <p className="text-xs text-[#3f3f46]">© 2026 otakuum. Концепт. Все права защищены.</p>
         </div>
       </div>
     </footer>

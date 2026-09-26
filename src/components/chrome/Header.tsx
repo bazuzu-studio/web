@@ -74,8 +74,8 @@ export function Header() {
             href="/"
             className="shrink-0 text-xl font-black tracking-tight transition-opacity hover:opacity-90"
           >
-            CINE<span className="bg-[linear-gradient(135deg,#FF6A5A,#EF4A4F)] bg-clip-text text-transparent">
-              HUB
+            ota<span className="bg-[linear-gradient(135deg,#FF6A5A,#EF4A4F)] bg-clip-text text-transparent">
+              kuum
             </span>
           </Link>
 
