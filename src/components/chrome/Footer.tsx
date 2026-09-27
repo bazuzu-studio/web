@@ -7,6 +7,7 @@ const links = [
   { label: "Сериалы", href: "/catalog?type=series" },
   { label: "Избранное", href: "/favorites" },
   { label: "Профиль", href: "/profile" },
+  { label: "Контакты", href: "/contact" },
 ];
 
 export function Footer() {

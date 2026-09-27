@@ -92,6 +92,9 @@ apps/web/
 │   │   ├── login/, register/,   # Аутентификация
 │   │   │   forgot-password/
 │   │   ├── profile/, profile/edit/  # Личный кабинет
+│   │   ├── contact/              # Форма обратной связи (сайт)
+│   │   ├── api/content/           # REST-роут каталога (см. "Данные и API")
+│   │   ├── api/contact/           # POST-роут формы обратной связи (проксирует в CMS)
 │   │   ├── sitemap.ts, robots.ts    # SEO
 │   │   └── not-found.tsx
 │   ├── components/
@@ -110,6 +113,7 @@ apps/web/
 │       ├── data.ts             # Мок-данные для страниц/функций, ещё не подключённых к API
 │       ├── graphql-client.ts    # GraphQL-клиент с credentials: 'include' (для авторизованных запросов)
 │       ├── query-client.ts       # Конфигурация React Query
+│       ├── cms.ts                # Вычисляет origin CMS для серверных REST-вызовов (contact-message)
 │       ├── types.ts               # Общие типы
 │       └── utils.ts                # Утилиты
 ├── codegen.ts               # Конфигурация graphql-codegen
@@ -126,6 +130,17 @@ apps/web/
 - Авторизованные запросы (профиль, избранное) идут через `gqlClient` из `src/lib/graphql-client.ts` с `credentials: 'include'`, чтобы браузер отправлял httpOnly JWT-cookie, которую ставит Payload при логине/регистрации.
 
 При появлении новых GraphQL-операций: добавьте `.graphql`-файл в `src/graphql/**`, запустите `pnpm codegen`, импортируйте сгенерированный документ из `src/generated/graphql.ts`.
+
+## Форма обратной связи
+
+Страница `/contact` (`src/components/pages/ContactClient.tsx`) отправляет `POST /api/contact`. Этот роут **не хранит SMTP-учётных данных** — он валидирует поля (имя/email/длина сообщения), проверяет honeypot-поле `website` и простой in-memory rate-limit (3 письма/час с IP), а затем проксирует запрос в CMS: `POST <cms>/api/contact-message` (`apps/cms/src/endpoints/contact-message.ts`), где письмо реально отправляется через уже настроенный там email-адаптер (Nodemailer). Адрес CMS вычисляется в `src/lib/cms.ts` из `GRAPHQL_API_URL`/`NEXT_PUBLIC_GRAPHQL_API_URL` — отдельной переменной для этого не заведено.
+
+Обработка ошибок в `src/app/api/contact/route.ts`:
+
+- Запрос к CMS обёрнут в таймаут (`AbortController`, 10 сек) — если CMS зависла или недоступна по сети, пользователь получает `502` вместо зависшего запроса.
+- Ответ CMS парсится отдельно от проверки статуса: если CMS вернула не-JSON (например, HTML-страницу 502 от reverse proxy), это тоже превращается в понятный `502`, а не в необработанное исключение.
+- Статус и сообщение от CMS (`400` — некорректные данные, `429` — превышен лимит, `503` — SMTP не настроен, `502` — не удалось отправить) пробрасываются пользователю как есть, чтобы форма могла отличить «попробуйте позже» от «исправьте данные».
+- CMS дублирует те же проверки (валидация, honeypot, rate-limit) у себя, так как её endpoint публичный и может быть вызван напрямую, в обход этого фронтенда.
 
 ## Изображения
 
