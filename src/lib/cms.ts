@@ -1,21 +1,23 @@
 /**
- * Базовый URL CMS (apps/cms) для серверных вызовов её REST-endpoint'ов
- * (в отличие от GraphQL-клиентов в graphql-client.ts / api.ts).
+ * Базовый URL CMS (apps/cms) для запросов к её REST-endpoint'ам напрямую
+ * из браузера (в отличие от GraphQL-клиента в graphql-client.ts).
  *
- * Намеренно не заводим отдельную переменную окружения: и так уже есть
- * GRAPHQL_API_URL / NEXT_PUBLIC_GRAPHQL_API_URL, указывающие на
- * `<cms>/api/graphql` — просто отрезаем это окончание, чтобы получить
- * origin CMS. Так одна переменная, а не две, могут разъехаться.
+ * Только NEXT_PUBLIC_GRAPHQL_API_URL: код исполняется на клиенте, поэтому
+ * внутренний GRAPHQL_API_URL (адрес CMS в приватной docker-сети, недоступный
+ * из браузера) здесь не подходит — в отличие от src/lib/api.ts, который
+ * ходит в CMS с сервера при SSR.
+ *
+ * Намеренно не заводим отдельную переменную окружения под сам origin:
+ * NEXT_PUBLIC_GRAPHQL_API_URL и так уже указывает на `<cms>/api/graphql` —
+ * просто отрезаем это окончание.
  */
 
-const GRAPHQL_SUFFIX_RE = /\/api\/graphql\/?$/
+const GRAPHQL_SUFFIX_RE = /\/api\/graphql\/?$/;
 
 const graphqlEndpoint =
-  process.env.GRAPHQL_API_URL ??
-  process.env.NEXT_PUBLIC_GRAPHQL_API_URL ??
-  "http://localhost:4000/api/graphql";
+  process.env.NEXT_PUBLIC_GRAPHQL_API_URL ?? "http://localhost:4000/api/graphql";
 
 export const cmsBaseUrl = graphqlEndpoint.replace(GRAPHQL_SUFFIX_RE, "");
 
-/** Полный URL endpoint'а формы обратной связи на CMS. */
+/** Полный URL endpoint'а формы обратной связи на CMS (см. ContactClient.tsx). */
 export const contactMessageEndpointUrl = `${cmsBaseUrl}/api/contact-message`;
