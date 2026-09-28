@@ -66,10 +66,10 @@ className="object-cover transition-transform duration-500 ease-out group-hover:s
         toggle(numericId);
       }}
       className={cn(
-        "absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-lg backdrop-blur-md transition-all duration-200",
+        "absolute bottom-2.5 right-2.5 flex h-9 w-9 sm:h-8 sm:w-8 items-center justify-center rounded-lg backdrop-blur-md transition-all duration-200",
         isFav
           ? "bg-[#EF4A4F] text-white shadow-[0_4px_14px_-2px_rgba(239,74,79,0.7)]"
-          : "bg-black/50 text-white/70 opacity-0 hover:bg-black/70 hover:text-white group-hover:translate-y-0 group-hover:opacity-100",
+          : "bg-black/50 text-white/70 opacity-0 hover:bg-black/70 hover:text-white group-hover:translate-y-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100",
       )}
       aria-label={
         isFav

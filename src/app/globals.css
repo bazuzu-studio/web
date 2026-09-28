@@ -206,8 +206,24 @@
    CINEMATIC POLISH — grain, scrollbar, selection, focus
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
+/* Плавную прокрутку включаем точечно (scrollIntoView/scrollTo с behavior),
+   а не глобально: глобальный smooth заставлял смену страницы «доезжать» наверх
+   с анимацией, особенно заметно на телефонах. */
 html {
-  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 body {

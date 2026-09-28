@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import React from "react";
 import "./globals.css";
@@ -16,6 +16,15 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  // viewport-fit=cover нужен, чтобы env(safe-area-inset-bottom) работал на
+  // iPhone с «чёлкой»/жестовой полосой — иначе нижняя навигация налезает на неё.
+  viewportFit: "cover",
+  themeColor: "#08080A",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
