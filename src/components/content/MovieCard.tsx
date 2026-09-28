@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 import type { ContentItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { formatAge } from "@/lib/age";
 import { Badge, StarRating } from "@/components/ui/Meta";
 import { useFavorites } from "@/components/providers/FavoritesContext";
 
@@ -48,6 +49,12 @@ className="object-cover transition-transform duration-500 ease-out group-hover:s
     {item.type === "series" && (
       <div className="absolute right-2 top-2">
         <Badge variant="series">СЕРИАЛ</Badge>
+      </div>
+    )}
+
+    {formatAge(item.ageRating) && (
+      <div className="absolute bottom-3 left-2">
+        <Badge variant="age">{formatAge(item.ageRating)}</Badge>
       </div>
     )}
 

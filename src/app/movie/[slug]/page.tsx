@@ -6,6 +6,7 @@ import {
   getSimilarContent,
 } from "@/lib/api";
 import { MovieDetailClient } from "@/components/pages/MovieDetailClient";
+import { formatAge, isAgeGated } from "@/lib/age";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -44,21 +45,27 @@ export async function generateMetadata({
     ? movie.description.slice(0, 200)
     : undefined;
 
+  const gated = isAgeGated(movie.ageRating);
+  const age = formatAge(movie.ageRating);
+
   return {
     title: movie.titleRu,
     description,
+    // Возрастная маркировка в метаданных страницы.
+    other: age ? { rating: age } : undefined,
 
     openGraph: {
       title: `${movie.titleRu} (${movie.releaseYear})`,
       description,
 
       // Не передаём битую ссылку, если backdrop отсутствует.
-      images: movie.backdrop.url
+      // Для 18+ не отдаём превью и ссылку на плеер в соцсети/краулерам.
+      images: !gated && movie.backdrop.url
         ? [{ url: movie.backdrop.url }]
         : undefined,
 
       // Ссылка на плеер (Kodik playerLink) — только для фильмов, где она есть.
-      videos: movie.playerLink
+      videos: !gated && movie.playerLink
         ? [{ url: movie.playerLink }]
         : undefined,
 

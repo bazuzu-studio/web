@@ -2,10 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSafeEmbedUrl } from "@/lib/embed-allowlist";
+import { formatAge } from "@/lib/age";
 
 interface VideoPlayerProps {
   embedUrl: string | undefined | null;
   episodeNumber?: number;
+  /** Возрастное ограничение — показывается знаком в углу плеера. */
+  ageRating?: number | null;
   className?: string;
 }
 
@@ -18,7 +21,7 @@ function buildEmbedSrc(base: string, episodeNumber?: number): string {
   return url.toString();
 }
 
-export function VideoPlayer({ embedUrl, episodeNumber, className }: VideoPlayerProps) {
+export function VideoPlayer({ embedUrl, episodeNumber, ageRating, className }: VideoPlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loading, setLoading] = useState(true);
   const [timedOut, setTimedOut] = useState(false);
@@ -51,9 +54,6 @@ export function VideoPlayer({ embedUrl, episodeNumber, className }: VideoPlayerP
 
     return () => clearTimeout(timer);
   }, [src, retryKey]);
-
-  console.log(safeUrl);
-  
 
   // Fallback: нет валидного URL
   if (!src) {
@@ -122,6 +122,12 @@ export function VideoPlayer({ embedUrl, episodeNumber, className }: VideoPlayerP
         onLoad={handleLoad}
         title="Видеоплеер"
       />
+
+      {formatAge(ageRating) && (
+        <span className="pointer-events-none absolute left-3 top-3 z-20 rounded-md bg-black/60 px-1.5 py-0.5 text-[11px] font-bold text-white ring-1 ring-white/25">
+          {formatAge(ageRating)}
+        </span>
+      )}
     </div>
   );
 }

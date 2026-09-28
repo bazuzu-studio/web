@@ -12,6 +12,8 @@ import { Badge, GenreChip, StarRating } from "@/components/ui/Meta";
 import { MovieCard } from "@/components/content/MovieCard";
 import { EpisodeCard } from "@/components/content/EpisodeCard";
 import { VideoPlayer } from "@/components/content/VideoPlayer";
+import { AgeGate } from "@/components/content/AgeGate";
+import { formatAge } from "@/lib/age";
 import { useFavorites } from "@/components/providers/FavoritesContext";
 import { useAuth } from "@/components/providers/AuthContext";
 
@@ -87,6 +89,7 @@ export function SeriesDetailClient({
   const activeEpisodeNumber = activeEpisode?.episodeNumber;
 
   return (
+    <AgeGate ageRating={series.ageRating}>
     <div className="bg-[#08080A] text-white">
       {/* Hero Section */}
       <div className="relative h-[300px] sm:h-[420px] overflow-hidden">
@@ -121,6 +124,11 @@ export function SeriesDetailClient({
                 sizes="(max-width: 640px) 192px, (max-width: 1024px) 224px, 256px"
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
               />
+              {formatAge(series.ageRating) && (
+                <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded-md text-[11px] font-bold bg-black/70 text-white ring-1 ring-white/20">
+                  {formatAge(series.ageRating)}
+                </span>
+              )}
             </div>
           </div>
 
@@ -152,6 +160,11 @@ export function SeriesDetailClient({
               <span className="text-[#71717A]">
                 {series.seasons.reduce((a, s) => a + (s.episodes?.length ?? 0), 0)} эпизодов
               </span>
+              {formatAge(series.ageRating) && (
+                <span className="px-1.5 py-0.5 rounded border border-[#A1A1AA]/40 text-xs font-semibold">
+                  {formatAge(series.ageRating)}
+                </span>
+              )}
             </div>
 
             <p className="text-[#A1A1AA] leading-relaxed mb-6 max-w-2xl line-clamp-3">
@@ -261,7 +274,7 @@ export function SeriesDetailClient({
                   <span>{activeEpisode.title}</span>
                 </div>
               )}
-              <VideoPlayer embedUrl={safeEmbedUrl} episodeNumber={activeEpisodeNumber} />
+              <VideoPlayer embedUrl={safeEmbedUrl} episodeNumber={activeEpisodeNumber} ageRating={series.ageRating} />
             </div>
 
             {/* Список эпизодов */}
@@ -306,5 +319,6 @@ export function SeriesDetailClient({
         )}
       </div>
     </div>
+    </AgeGate>
   );
 }

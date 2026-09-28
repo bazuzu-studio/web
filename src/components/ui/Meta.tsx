@@ -25,11 +25,12 @@ export function Badge({
   variant = "default",
 }: {
   children: React.ReactNode;
-  variant?: "default" | "series" | "new";
+  variant?: "default" | "series" | "new" | "age";
 }) {
   const styles = {
     default: "bg-black/55 text-white border border-white/15 backdrop-blur-md",
     series: "bg-blue-500/15 text-blue-300 border border-blue-400/30 backdrop-blur-md",
+    age: "bg-black/70 text-white border border-white/25 backdrop-blur-md",
     new: "text-white bg-[linear-gradient(135deg,#FF6A5A,#EF4A4F)] shadow-[0_4px_14px_-4px_rgba(239,74,79,0.7)] border border-white/10",
   };
   return (

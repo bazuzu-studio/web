@@ -1,3 +1,4 @@
+import { formatAge, isAgeGated } from "@/lib/age";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
@@ -38,13 +39,17 @@ export async function generateMetadata({
     return {};
   }
 
+  const gated = isAgeGated(series.ageRating);
+  const age = formatAge(series.ageRating);
+
   return {
     title: series.titleRu,
     description: series.description,
+    other: age ? { rating: age } : undefined,
     openGraph: {
       title: `${series.titleRu} (${series.releaseYear})`,
       description: series.description,
-      images: series.backdrop?.url
+      images: !gated && series.backdrop?.url
         ? [{ url: series.backdrop.url }]
         : [],
       type: "video.tv_show",

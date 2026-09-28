@@ -9,6 +9,8 @@ import { formatDuration } from "@/lib/utils";
 import { Btn } from "@/components/ui/Btn";
 import { Badge, GenreChip, StarRating } from "@/components/ui/Meta";
 import { MovieCard } from "@/components/content/MovieCard";
+import { VideoPlayer } from "@/components/content/VideoPlayer";
+import { AgeGate } from "@/components/content/AgeGate";
 import { useFavorites } from "@/components/providers/FavoritesContext";
 
 export function MovieDetailClient({ movie, similar }: { movie: Movie; similar: ContentItem[] }) {
@@ -24,6 +26,7 @@ export function MovieDetailClient({ movie, similar }: { movie: Movie; similar: C
   };
 
   return (
+    <AgeGate ageRating={movie.ageRating}>
     <div>
       <div className="relative h-[300px] sm:h-[420px] overflow-hidden">
         {/* Backdrop — LCP-элемент страницы фильма (ТЗ, п.4.1) */}
@@ -135,16 +138,7 @@ export function MovieDetailClient({ movie, similar }: { movie: Movie; similar: C
         {/* Плеер — Kodik playerLink (только для фильмов, см. content.player_link). */}
         <div ref={playerRef} className="mt-10 scroll-mt-24">
           {hasPlayer ? (
-            <div className="aspect-video w-full rounded-2xl overflow-hidden ring-1 ring-white/10 bg-black">
-              <iframe
-                src={movie.playerLink}
-                title={`Плеер: ${movie.titleRu}`}
-                allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-                allowFullScreen
-                referrerPolicy="origin"
-                className="w-full h-full border-0"
-              />
-            </div>
+            <VideoPlayer embedUrl={movie.embedUrl ?? movie.playerLink} ageRating={movie.ageRating} />
           ) : (
             <div className="aspect-video w-full rounded-2xl flex items-center justify-center bg-white/3 border border-white/6 text-sm text-[#71717A]">
               Плеер для этого фильма пока недоступен
@@ -165,5 +159,6 @@ export function MovieDetailClient({ movie, similar }: { movie: Movie; similar: C
         )}
       </div>
     </div>
+    </AgeGate>
   );
 }
