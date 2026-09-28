@@ -7,6 +7,7 @@ import {
 } from "@/lib/api";
 import { MovieDetailClient } from "@/components/pages/MovieDetailClient";
 import { formatAge, isAgeGated } from "@/lib/age";
+import { contentJsonLd, jsonLdString } from "@/lib/jsonld";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -87,9 +88,15 @@ export default async function MoviePage({
   const similar = await getSimilarContent(movie);
 
   return (
-    <MovieDetailClient
-      movie={movie}
-      similar={similar}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdString(contentJsonLd(movie)) }}
+      />
+      <MovieDetailClient
+        movie={movie}
+        similar={similar}
+      />
+    </>
   );
 }

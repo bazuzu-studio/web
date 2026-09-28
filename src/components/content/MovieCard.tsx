@@ -6,7 +6,8 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 import type { ContentItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { formatAge } from "@/lib/age";
+import { formatAge, isAgeGated } from "@/lib/age";
+import { useAgeConfirmed } from "@/lib/age-client";
 import { Badge, StarRating } from "@/components/ui/Meta";
 import { useFavorites } from "@/components/providers/FavoritesContext";
 
@@ -21,6 +22,10 @@ const { isFavorite, toggle } = useFavorites();
 // а FavoritesContext сейчас принимает number.
 const numericId = Number(item.id);
 
+// Постеры 18+ размыты, пока посетитель не подтвердил возраст.
+const ageConfirmed = useAgeConfirmed();
+const hidePoster = isAgeGated(item.ageRating) && !ageConfirmed;
+
 const isFav = isFavorite(numericId);
 
 const href =
@@ -34,8 +39,17 @@ src={item.poster?.url ?? "/default-poster.jpg"}
 alt={item.titleRu}
 fill
 sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 180px"
-className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.08]"
+className={cn(
+"object-cover transition-transform duration-500 ease-out group-hover:scale-[1.08]",
+hidePoster && "scale-125 blur-2xl"
+)}
 />
+
+{hidePoster && (
+<div className="absolute inset-0 flex items-center justify-center bg-black/30">
+<span className="rounded-full border border-white/30 bg-black/50 px-3 py-1 text-sm font-bold text-white">18+</span>
+</div>
+)}
 
 
     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
@@ -93,7 +107,7 @@ className="object-cover transition-transform duration-500 ease-out group-hover:s
 
     <div className="mt-1 flex items-center gap-2">
       <StarRating rating={item.rating} />
-      <span className="text-xs text-[#71717A]">
+      <span className="text-xs text-[#8E8E98]">
         {item.releaseYear}
       </span>
     </div>

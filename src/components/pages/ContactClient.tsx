@@ -67,7 +67,7 @@ export function ContactClient() {
   return (
     <AuthLayout>
       <h1 className="text-2xl font-bold text-white mb-1">Связаться с нами</h1>
-      <p className="text-sm text-[#71717A] mb-6">
+      <p className="text-sm text-[#8E8E98] mb-6">
         Вопрос, жалоба на контент или предложение — напишите нам, ответим на почту
       </p>
 
@@ -78,7 +78,7 @@ export function ContactClient() {
           </div>
           <div>
             <p className="font-semibold text-white">Сообщение отправлено!</p>
-            <p className="text-sm text-[#71717A] mt-1">Мы ответим на {email}</p>
+            <p className="text-sm text-[#8E8E98] mt-1">Мы ответим на {email}</p>
           </div>
           <Link href="/">
             <Btn variant="outline" size="sm">
@@ -91,7 +91,7 @@ export function ContactClient() {
           <div>
             <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5">Имя</label>
             <div className="relative">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#71717A]" />
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E98]" />
               <input
                 type="text"
                 required
@@ -101,7 +101,7 @@ export function ContactClient() {
                   setError("");
                 }}
                 placeholder="Ваше имя"
-                className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#3f3f46] outline-none focus:border-[#EF4A4F]/50 transition-colors"
+                className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#6B6B75] outline-none focus:border-[#EF4A4F]/50 transition-colors"
               />
             </div>
           </div>
@@ -109,7 +109,7 @@ export function ContactClient() {
           <div>
             <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5">Email</label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#71717A]" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E98]" />
               <input
                 type="email"
                 required
@@ -119,7 +119,7 @@ export function ContactClient() {
                   setError("");
                 }}
                 placeholder="you@example.com"
-                className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#3f3f46] outline-none focus:border-[#EF4A4F]/50 transition-colors"
+                className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#6B6B75] outline-none focus:border-[#EF4A4F]/50 transition-colors"
               />
             </div>
           </div>
@@ -127,7 +127,7 @@ export function ContactClient() {
           <div>
             <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5">Сообщение</label>
             <div className="relative">
-              <MessageSquare className="absolute left-3.5 top-3.5 w-4 h-4 text-[#71717A]" />
+              <MessageSquare className="absolute left-3.5 top-3.5 w-4 h-4 text-[#8E8E98]" />
               <textarea
                 required
                 rows={5}
@@ -137,7 +137,7 @@ export function ContactClient() {
                   setError("");
                 }}
                 placeholder="Опишите ваш вопрос или предложение"
-                className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#3f3f46] outline-none focus:border-[#EF4A4F]/50 transition-colors resize-none"
+                className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#6B6B75] outline-none focus:border-[#EF4A4F]/50 transition-colors resize-none"
               />
             </div>
           </div>

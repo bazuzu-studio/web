@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldAlert } from "lucide-react";
 import { Btn } from "@/components/ui/Btn";
-import { AGE_CONFIRMED_KEY, isAgeGated } from "@/lib/age";
+import { isAgeGated } from "@/lib/age";
+import { confirmAge, useAgeConfirmed } from "@/lib/age-client";
 
 /**
  * Age-gate для материалов 18+.
@@ -26,26 +26,9 @@ export function AgeGate({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const [confirmed, setConfirmed] = useState(false);
-
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(AGE_CONFIRMED_KEY) === "true") setConfirmed(true);
-    } catch {
-      // localStorage недоступен (приватный режим) — просто спросим ещё раз.
-    }
-  }, []);
+  const confirmed = useAgeConfirmed();
 
   if (!isAgeGated(ageRating) || confirmed) return <>{children}</>;
-
-  const confirm = () => {
-    try {
-      localStorage.setItem(AGE_CONFIRMED_KEY, "true");
-    } catch {
-      // см. выше
-    }
-    setConfirmed(true);
-  };
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4 pt-24">
@@ -64,7 +47,7 @@ export function AgeGate({
           что вам исполнилось 18 лет.
         </p>
         <div className="flex flex-col gap-2">
-          <Btn size="lg" className="w-full" onClick={confirm}>
+          <Btn size="lg" className="w-full" onClick={confirmAge}>
             Мне есть 18 лет
           </Btn>
           <Btn size="lg" variant="outline" className="w-full" onClick={() => router.push("/")}>

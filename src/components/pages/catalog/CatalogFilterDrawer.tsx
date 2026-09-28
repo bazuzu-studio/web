@@ -104,7 +104,7 @@ export function CatalogFilterDrawer({
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-[#71717A] transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#EF4A4F]/30"
+            className="rounded-lg p-2 text-[#8E8E98] transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus:ring-2 focus:ring-[#EF4A4F]/30"
             aria-label="Закрыть фильтры"
           >
             <X aria-hidden className="h-5 w-5" />
@@ -186,7 +186,7 @@ function FilterSection({
 }) {
   return (
     <section>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#71717A]">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#8E8E98]">
         {label}
       </p>
 
@@ -213,7 +213,7 @@ function FilterButton({
         "rounded-lg border px-3 py-1.5 text-xs font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#EF4A4F]/30",
         active
           ? "border-[#EF4A4F]/40 bg-[#EF4A4F]/20 text-[#EF4A4F]"
-          : "border-white/8 text-[#71717A] hover:border-white/16 hover:bg-white/5 hover:text-white",
+          : "border-white/8 text-[#8E8E98] hover:border-white/16 hover:bg-white/5 hover:text-white",
       )}
     >
       {children}

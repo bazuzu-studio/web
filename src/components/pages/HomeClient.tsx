@@ -5,6 +5,7 @@ import type { ContentItem } from "@/lib/types";
 
 import { HeroSection } from "@/components/content/HeroSection";
 import { ContentRow } from "@/components/content/ContentRow";
+import { ContinueWatching } from "@/components/content/ContinueWatching";
 
 interface HomeClientProps {
   heroItem?: ContentItem;
@@ -38,6 +39,8 @@ export function HomeClient({
       )}
 
       <div className="mt-10 space-y-2">
+        <ContinueWatching />
+
         {popular.length > 0 && (
           <ContentRow
             title="Популярное"

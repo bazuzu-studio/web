@@ -83,7 +83,7 @@ export function EpisodeGrid({ episodes, activeNumber, watched, onSelect }: Episo
                 isActive
                   ? "border-[#EF4A4F] bg-[linear-gradient(135deg,#FF6A5A,#EF4A4F)] text-white shadow-[0_6px_18px_-6px_rgba(239,74,79,0.8)]"
                   : isWatched
-                    ? "border-white/8 bg-white/[0.03] text-[#71717A] hover:border-white/20 hover:text-white"
+                    ? "border-white/8 bg-white/[0.03] text-[#8E8E98] hover:border-white/20 hover:text-white"
                     : "border-white/10 bg-white/[0.06] text-white hover:border-[#EF4A4F]/40 hover:bg-white/10",
               )}
             >

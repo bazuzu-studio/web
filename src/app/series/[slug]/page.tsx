@@ -1,4 +1,5 @@
 import { formatAge, isAgeGated } from "@/lib/age";
+import { contentJsonLd, jsonLdString } from "@/lib/jsonld";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
@@ -77,9 +78,15 @@ export default async function SeriesPage({
   const similar = await getSimilarContent(normalizedSeries);
 
   return (
-    <SeriesDetailClient
-      series={normalizedSeries}
-      similar={similar}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdString(contentJsonLd(normalizedSeries)) }}
+      />
+      <SeriesDetailClient
+        series={normalizedSeries}
+        similar={similar}
+      />
+    </>
   );
 }

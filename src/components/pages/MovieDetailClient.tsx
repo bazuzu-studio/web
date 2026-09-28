@@ -76,7 +76,7 @@ export function MovieDetailClient({ movie, similar }: { movie: Movie; similar: C
               ))}
             </div>
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-1 [text-wrap:balance]">{movie.titleRu}</h1>
-            <p className="text-[#71717A] text-sm mb-4 font-medium">{movie.titleEn}</p>
+            <p className="text-[#8E8E98] text-sm mb-4 font-medium">{movie.titleEn}</p>
 
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-5 gap-y-2 mb-5 text-sm text-[#A1A1AA]">
               <StarRating rating={movie.rating} />
@@ -120,13 +120,13 @@ export function MovieDetailClient({ movie, similar }: { movie: Movie; similar: C
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-white/3 border border-white/6 text-left">
                 {movie.director && (
                   <div>
-                    <p className="text-xs text-[#71717A] font-medium uppercase tracking-wider mb-1">Режиссёр</p>
+                    <p className="text-xs text-[#8E8E98] font-medium uppercase tracking-wider mb-1">Режиссёр</p>
                     <p className="text-sm text-white font-medium">{movie.director}</p>
                   </div>
                 )}
                 {movie.cast && (
                   <div>
-                    <p className="text-xs text-[#71717A] font-medium uppercase tracking-wider mb-1">В ролях</p>
+                    <p className="text-xs text-[#8E8E98] font-medium uppercase tracking-wider mb-1">В ролях</p>
                     <p className="text-sm text-white font-medium">{movie.cast.join(", ")}</p>
                   </div>
                 )}
@@ -140,7 +140,7 @@ export function MovieDetailClient({ movie, similar }: { movie: Movie; similar: C
           {hasPlayer ? (
             <VideoPlayer embedUrl={movie.embedUrl ?? movie.playerLink} ageRating={movie.ageRating} />
           ) : (
-            <div className="aspect-video w-full rounded-2xl flex items-center justify-center bg-white/3 border border-white/6 text-sm text-[#71717A]">
+            <div className="aspect-video w-full rounded-2xl flex items-center justify-center bg-white/3 border border-white/6 text-sm text-[#8E8E98]">
               Плеер для этого фильма пока недоступен
             </div>
           )}
@@ -149,7 +149,7 @@ export function MovieDetailClient({ movie, similar }: { movie: Movie; similar: C
         {similar.length > 0 && (
           <div className="mt-14">
             <h2 className="text-xl font-bold text-white mb-5">Вам может понравиться</h2>
-            <p className="text-xs text-[#3f3f46] mb-4">Функция рекомендаций появится в следующей версии</p>
+            <p className="text-xs text-[#6B6B75] mb-4">Функция рекомендаций появится в следующей версии</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
               {similar.map((m) => (
                 <MovieCard key={m.id} item={m} />

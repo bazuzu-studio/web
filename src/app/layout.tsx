@@ -33,6 +33,10 @@ export const metadata: Metadata = {
     template: "%s · otakuum",
   },
   description: "Премиальный каталог фильмов и сериалов otakuum. Смотрите описания, рейтинги и добавляйте в избранное.",
+  icons: {
+    icon: [{ url: "/icon-192.png", sizes: "192x192", type: "image/png" }],
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     type: "website",
     siteName: "otakuum",

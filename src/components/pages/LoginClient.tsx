@@ -42,13 +42,13 @@ export function LoginClient() {
   return (
     <AuthLayout>
       <h1 className="text-2xl font-bold text-white mb-1">С возвращением</h1>
-      <p className="text-sm text-[#71717A] mb-6">Войдите, чтобы продолжить</p>
+      <p className="text-sm text-[#8E8E98] mb-6">Войдите, чтобы продолжить</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div>
           <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5">Email</label>
           <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#71717A]" />
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E98]" />
             <input
               type="email"
               required
@@ -58,14 +58,14 @@ export function LoginClient() {
                 setError("");
               }}
               placeholder="you@example.com"
-              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#3f3f46] outline-none focus:border-[#EF4A4F]/50 transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-[#6B6B75] outline-none focus:border-[#EF4A4F]/50 transition-colors"
             />
           </div>
         </div>
         <div>
           <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5">Пароль</label>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#71717A]" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E98]" />
             <input
               type={showPass ? "text" : "password"}
               value={pass}
@@ -74,12 +74,12 @@ export function LoginClient() {
                 setError("");
               }}
               placeholder="••••••••"
-              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-11 py-3 text-sm text-white placeholder:text-[#3f3f46] outline-none focus:border-[#EF4A4F]/50 transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-11 py-3 text-sm text-white placeholder:text-[#6B6B75] outline-none focus:border-[#EF4A4F]/50 transition-colors"
             />
             <button
               type="button"
               onClick={() => setShowPass(!showPass)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#71717A] hover:text-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-[#8E8E98] hover:text-white"
             >
               {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -93,7 +93,7 @@ export function LoginClient() {
           </div>
         )}
 
-        <Link href="/forgot-password" className="text-xs text-[#71717A] hover:text-white text-left transition-colors -mt-1">
+        <Link href="/forgot-password" className="text-xs text-[#8E8E98] hover:text-white text-left transition-colors -mt-1">
           Забыли пароль?
         </Link>
 
@@ -101,7 +101,7 @@ export function LoginClient() {
           {isSubmitting ? "Входим..." : "Войти"}
         </Btn>
 
-        <div className="text-center text-sm text-[#71717A] mt-1">
+        <div className="text-center text-sm text-[#8E8E98] mt-1">
           Нет аккаунта?{" "}
           <Link href="/register" className="text-[#EF4A4F] hover:text-[#EF4A4F]/80 font-medium">
             Создать аккаунт

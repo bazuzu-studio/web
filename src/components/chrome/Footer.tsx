@@ -8,6 +8,8 @@ const links = [
   { label: "Избранное", href: "/favorites" },
   { label: "Профиль", href: "/profile" },
   { label: "Контакты", href: "/contact" },
+  { label: "Конфиденциальность", href: "/privacy" },
+  { label: "Правообладателям", href: "/copyright" },
 ];
 
 export function Footer() {
@@ -20,20 +22,20 @@ export function Footer() {
             <p className="text-xl font-black tracking-tight">
               ota<span className="bg-[linear-gradient(135deg,#FF6A5A,#EF4A4F)] bg-clip-text text-transparent">kuum</span>
             </p>
-            <p className="text-sm text-[#71717A] mt-2 max-w-xs">
+            <p className="text-sm text-[#8E8E98] mt-2 max-w-xs">
               Премиальный каталог фильмов и сериалов. Откройте для себя мир кино.
             </p>
           </div>
           <div className="flex flex-wrap gap-x-10 gap-y-4">
             {links.map(({ label, href }) => (
-              <Link key={label} href={href} className="text-sm text-[#71717A] hover:text-white transition-colors">
+              <Link key={label} href={href} className="text-sm text-[#8E8E98] hover:text-white transition-colors">
                 {label}
               </Link>
             ))}
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-white/6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-[#3f3f46]">© 2026 otakuum. Концепт. Все права защищены.</p>
+          <p className="text-xs text-[#6B6B75]">© 2026 otakuum. Концепт. Все права защищены.</p>
         </div>
       </div>
     </footer>

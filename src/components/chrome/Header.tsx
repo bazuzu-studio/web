@@ -105,7 +105,7 @@ export function Header() {
                   value={searchVal}
                   onChange={(e) => setSearchVal(e.target.value)}
                   placeholder="Поиск по названию..."
-                  className="min-w-0 flex-1 sm:w-64 sm:flex-none bg-[#111113] border border-white/15 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-[#71717A] outline-none focus:border-[#EF4A4F]/50 focus:ring-1 focus:ring-[#EF4A4F]/30"
+                  className="min-w-0 flex-1 sm:w-64 sm:flex-none bg-[#111113] border border-white/15 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-[#8E8E98] outline-none focus:border-[#EF4A4F]/50 focus:ring-1 focus:ring-[#EF4A4F]/30"
                 />
                 <button
                   type="button"
@@ -113,7 +113,7 @@ export function Header() {
                     setSearchActive(false);
                     setSearchVal("");
                   }}
-                  className="p-2 text-[#71717A] hover:text-white"
+                  className="p-2 text-[#8E8E98] hover:text-white"
                   aria-label="Закрыть поиск"
                 >
                   <X className="w-5 h-5" />
@@ -207,7 +207,7 @@ export function Header() {
               "flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-colors min-w-[44px]",
               isActive(href)
                 ? "text-[#EF4A4F]"
-                : "text-[#71717A] hover:text-white",
+                : "text-[#8E8E98] hover:text-white",
               disabled && "opacity-50 pointer-events-none"
             )}
           >

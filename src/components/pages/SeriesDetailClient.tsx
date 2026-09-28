@@ -15,6 +15,7 @@ import { VideoPlayer } from "@/components/content/VideoPlayer";
 import { AgeGate } from "@/components/content/AgeGate";
 import { formatAge } from "@/lib/age";
 import { plural } from "@/lib/plural";
+import { saveContinue } from "@/lib/continue-watching";
 import { useFavorites } from "@/components/providers/FavoritesContext";
 import { useAuth } from "@/components/providers/AuthContext";
 
@@ -122,9 +123,16 @@ export function SeriesDetailClient({
 
       setActiveEpisode(episode);
       markWatched(episode.episodeNumber);
+      saveContinue({
+        slug: series.slug,
+        titleRu: series.titleRu,
+        posterUrl: series.poster?.url || undefined,
+        ageRating: series.ageRating,
+        episode: episode.episodeNumber,
+      });
       revealPlayer();
     },
-    [markWatched, revealPlayer],
+    [markWatched, revealPlayer, series.slug, series.titleRu, series.poster?.url, series.ageRating],
   );
 
   const sortedEpisodes = useMemo(
@@ -137,6 +145,28 @@ export function SeriesDetailClient({
   const prevEpisode = activeIndex > 0 ? sortedEpisodes[activeIndex - 1] : null;
   const nextEpisode =
     activeIndex >= 0 && activeIndex < sortedEpisodes.length - 1 ? sortedEpisodes[activeIndex + 1] : null;
+
+  // Автопереход: плеер сообщает об окончании серии (см. VideoPlayer.onEnded).
+  const [autoNext, setAutoNext] = useState(true);
+  useEffect(() => {
+    try {
+      setAutoNext(localStorage.getItem("auto-next") !== "off");
+    } catch {
+      // по умолчанию включено
+    }
+  }, []);
+  const toggleAutoNext = () =>
+    setAutoNext((v) => {
+      try {
+        localStorage.setItem("auto-next", v ? "off" : "on");
+      } catch {
+        // см. выше
+      }
+      return !v;
+    });
+  const handleEnded = useCallback(() => {
+    if (autoNext && nextEpisode) selectEpisode(nextEpisode);
+  }, [autoNext, nextEpisode, selectEpisode]);
 
   const startWatching = () => {
     if (activeEpisode) return revealPlayer();
@@ -205,7 +235,7 @@ export function SeriesDetailClient({
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-1 [text-wrap:balance]">
               {series.titleRu}
             </h1>
-            <p className="text-[#71717A] text-sm mb-4 font-medium">{series.titleEn}</p>
+            <p className="text-[#8E8E98] text-sm mb-4 font-medium">{series.titleEn}</p>
 
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-5 gap-y-2 mb-5 text-sm text-[#A1A1AA]">
               <StarRating rating={series.rating} />
@@ -217,7 +247,7 @@ export function SeriesDetailClient({
                 <Tv className="w-4 h-4" />
                 {series.seasons.length} {plural(series.seasons.length, ["сезон", "сезона", "сезонов"])}
               </span>
-              <span className="text-[#71717A]">
+              <span className="text-[#8E8E98]">
                 {totalEpisodes} {plural(totalEpisodes, ["серия", "серии", "серий"])}
               </span>
               {formatAge(series.ageRating) && (
@@ -253,7 +283,7 @@ export function SeriesDetailClient({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 rounded-2xl bg-white/3 border border-white/6 mt-6 text-left">
                 {series.director && (
                   <div>
-                    <p className="text-xs text-[#71717A] font-medium uppercase tracking-wider mb-1">
+                    <p className="text-xs text-[#8E8E98] font-medium uppercase tracking-wider mb-1">
                       Режиссёр
                     </p>
                     <p className="text-sm text-white font-medium">{series.director}</p>
@@ -261,7 +291,7 @@ export function SeriesDetailClient({
                 )}
                 {series.cast && (
                   <div>
-                    <p className="text-xs text-[#71717A] font-medium uppercase tracking-wider mb-1">
+                    <p className="text-xs text-[#8E8E98] font-medium uppercase tracking-wider mb-1">
                       В ролях
                     </p>
                     <p className="text-sm text-white font-medium">{series.cast.join(", ")}</p>
@@ -317,7 +347,7 @@ export function SeriesDetailClient({
                 activeEpisode && "sticky top-16 shadow-[0_12px_24px_-12px_rgba(0,0,0,0.9)] lg:static lg:shadow-none",
               )}
             >
-              <VideoPlayer embedUrl={safeEmbedUrl} episodeNumber={activeEpisodeNumber} ageRating={series.ageRating} />
+              <VideoPlayer embedUrl={safeEmbedUrl} episodeNumber={activeEpisodeNumber} ageRating={series.ageRating} onEnded={handleEnded} />
 
               {activeEpisode && (
                 <div className="mt-3 flex items-center gap-2">
@@ -339,7 +369,7 @@ export function SeriesDetailClient({
                         : ""}
                     </p>
                     {activeEpisode.duration > 0 && (
-                      <p className="mt-0.5 flex items-center justify-center gap-1 text-xs text-[#71717A]">
+                      <p className="mt-0.5 flex items-center justify-center gap-1 text-xs text-[#8E8E98]">
                         <Clock className="h-3 w-3" />
                         {activeEpisode.duration} мин
                       </p>
@@ -359,6 +389,13 @@ export function SeriesDetailClient({
               )}
             </div>
 
+            {activeEpisode && (
+              <label className="mb-2 mt-1 flex cursor-pointer items-center justify-end gap-2 text-xs text-[#A1A1AA]">
+                <input type="checkbox" checked={autoNext} onChange={toggleAutoNext} className="h-4 w-4 accent-[#EF4A4F]" />
+                Автопереход на следующую серию
+              </label>
+            )}
+
             {activeEpisode?.description && (
               <p className="mb-5 mt-2 text-sm leading-relaxed text-[#A1A1AA]">{activeEpisode.description}</p>
             )}
@@ -367,7 +404,7 @@ export function SeriesDetailClient({
             <div className="mt-4">
               <div className="mb-3 flex items-baseline justify-between">
                 <h3 className="text-base font-bold text-white">Серии</h3>
-                <span className="text-xs text-[#71717A]">
+                <span className="text-xs text-[#8E8E98]">
                   {sortedEpisodes.length} {plural(sortedEpisodes.length, ["серия", "серии", "серий"])}
                 </span>
               </div>
@@ -380,7 +417,7 @@ export function SeriesDetailClient({
                   onSelect={selectEpisode}
                 />
               ) : (
-                <p className="py-8 text-center text-sm text-[#71717A]">
+                <p className="py-8 text-center text-sm text-[#8E8E98]">
                   Для этого сезона пока нет загруженных эпизодов.
                 </p>
               )}
@@ -389,14 +426,14 @@ export function SeriesDetailClient({
         ) : (
           <div className="mt-14">
             <h2 className="text-xl font-bold text-white mb-2">Эпизоды</h2>
-            <p className="text-sm text-[#71717A]">Сезоны для этого сериала пока не добавлены.</p>
+            <p className="text-sm text-[#8E8E98]">Сезоны для этого сериала пока не добавлены.</p>
           </div>
         )}
 
         {similar.length > 0 && (
           <div className="mt-14">
             <h2 className="text-xl font-bold text-white mb-2">Похожие сериалы</h2>
-            <p className="text-xs text-[#3f3f46] mb-5">
+            <p className="text-xs text-[#6B6B75] mb-5">
               Функция рекомендаций появится в следующей версии
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
