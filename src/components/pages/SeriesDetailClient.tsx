@@ -2,14 +2,14 @@
 
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Calendar, Tv, Bookmark, BookmarkCheck, Film, Play, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import type { Series, ContentItem, Episode } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Btn } from "@/components/ui/Btn";
 import { Badge, GenreChip, ReleaseStatusBadge, StarRating } from "@/components/ui/Meta";
-import { MovieCard } from "@/components/content/MovieCard";
+import { SeasonSwitcher } from "@/components/content/SeasonSwitcher";
+import { SimilarContent } from "@/components/content/SimilarContent";
 import { EpisodeGrid } from "@/components/content/EpisodeGrid";
 import { VideoPlayer } from "@/components/content/VideoPlayer";
 import { AgeGate } from "@/components/content/AgeGate";
@@ -317,34 +317,8 @@ export function SeriesDetailClient({
               </p>
             )}
 
-            {/* Сезоны — горизонтальная лента, работает и на телефоне */}
-            {series.seasons.length > 1 && (
-              <nav
-                aria-label="Сезоны"
-                className="scrollbar-hide -mx-4 mb-5 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0"
-              >
-                {series.seasons.map((s) => {
-                  const num = typeof s.seasonNumber === "number" ? s.seasonNumber : 1;
-                  const href = s.slug ? `/series/${s.slug}` : "#";
-                  return (
-                    <Link
-                      key={`${num}-${s.id}`}
-                      href={href}
-                      scroll={false}
-                      aria-current={activeSeason === num ? "true" : undefined}
-                      className={cn(
-                        "shrink-0 rounded-full border px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all",
-                        activeSeason === num
-                          ? "border-[#EF4A4F]/50 bg-[#EF4A4F]/15 text-[#FF7A7D]"
-                          : "border-white/10 bg-white/5 text-[#A1A1AA] hover:border-white/20 hover:text-white",
-                      )}
-                    >
-                      {s.title || `Сезон ${num}`}
-                    </Link>
-                  );
-                })}
-              </nav>
-            )}
+            {/* Связанные сезоны (отдельные записи франшизы) */}
+            <SeasonSwitcher seasons={series.seasons} activeSeason={activeSeason} />
 
             {/* Плеер. На телефоне «прилипает» под шапкой, пока листаешь серии. */}
             <div
@@ -437,19 +411,7 @@ export function SeriesDetailClient({
           </div>
         )}
 
-        {similar.length > 0 && (
-          <div className="mt-14">
-            <h2 className="text-xl font-bold text-white mb-2">Похожие сериалы</h2>
-            <p className="text-xs text-[#6B6B75] mb-5">
-              Функция рекомендаций появится в следующей версии
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {similar.map((s) => (
-                <MovieCard key={s.id} item={s} />
-              ))}
-            </div>
-          </div>
-        )}
+        <SimilarContent title="Похожие сериалы" items={similar} />
       </div>
     </div>
     </AgeGate>

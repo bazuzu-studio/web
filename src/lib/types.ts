@@ -67,6 +67,9 @@ export interface Season {
   /** Постер связанного Content. */
   poster?: Media;
 
+  /** Статус релиза связанного Content (у каждого сезона своя запись в CMS). */
+  releaseStatus?: ReleaseStatus;
+
   episodes: Episode[];
 }
 

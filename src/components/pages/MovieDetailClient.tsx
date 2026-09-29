@@ -8,7 +8,7 @@ import type { Movie, ContentItem } from "@/lib/types";
 import { formatDuration } from "@/lib/utils";
 import { Btn } from "@/components/ui/Btn";
 import { Badge, GenreChip, ReleaseStatusBadge, StarRating } from "@/components/ui/Meta";
-import { MovieCard } from "@/components/content/MovieCard";
+import { SimilarContent } from "@/components/content/SimilarContent";
 import { VideoPlayer } from "@/components/content/VideoPlayer";
 import { AgeGate } from "@/components/content/AgeGate";
 import { useFavorites } from "@/components/providers/FavoritesContext";
@@ -147,17 +147,7 @@ export function MovieDetailClient({ movie, similar }: { movie: Movie; similar: C
           )}
         </div>
 
-        {similar.length > 0 && (
-          <div className="mt-14">
-            <h2 className="text-xl font-bold text-white mb-5">Вам может понравиться</h2>
-            <p className="text-xs text-[#6B6B75] mb-4">Функция рекомендаций появится в следующей версии</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
-              {similar.map((m) => (
-                <MovieCard key={m.id} item={m} />
-              ))}
-            </div>
-          </div>
-        )}
+        <SimilarContent title="Вам может понравиться" items={similar} />
       </div>
     </div>
     </AgeGate>

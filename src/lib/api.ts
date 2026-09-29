@@ -19,7 +19,7 @@ import type {
   Genre,
 } from "./types";
 
-import type { ReleaseStatus } from "./release-status";
+import { parseReleaseStatus, type ReleaseStatus } from "./release-status";
 
 const endpoint =
   process.env.GRAPHQL_API_URL ??
@@ -387,6 +387,7 @@ interface RawSeason {
   content?: {
     id: string | number;
     slug: string;
+    releaseStatus?: string | null;
     poster?: {
       id: string | number;
       url: string;
@@ -517,6 +518,11 @@ export async function getContentBySlug(
             slug:
               season.content?.slug ?? "",
 
+            releaseStatus:
+              parseReleaseStatus(
+                season.content?.releaseStatus,
+              ),
+
             poster:
               season.content?.poster ??
               undefined,
@@ -621,12 +627,27 @@ export async function getGenres(): Promise<
 /*                              Similar content                              */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * Похожий контент: тот же тип (сериал → сериалы), общий жанр, без самого
+ * тайтла и без других сезонов той же франшизы (они и так показаны в
+ * переключателе сезонов).
+ */
 export async function getSimilarContent(
   item: ContentItem,
-  limit = 5,
+  limit = 12,
 ): Promise<ContentItem[]> {
   if (!item.genreIds?.length) {
     return [];
+  }
+
+  const AND: Record<string, unknown>[] = [
+    { genres: { in: item.genreIds } },
+    { id: { not_equals: Number(item.id) } },
+    { type: { equals: item.type } },
+  ];
+
+  if (item.kinopoiskId) {
+    AND.push({ kinopoiskId: { not_equals: item.kinopoiskId } });
   }
 
   try {
@@ -634,9 +655,9 @@ export async function getSimilarContent(
       await serverClient.request(
         GetSimilarContentDocument,
         {
-          genreIds: item.genreIds,
-          excludeId: Number(item.id),
+          where: { AND },
           limit,
+          sort: "-rating",
         },
       );
 

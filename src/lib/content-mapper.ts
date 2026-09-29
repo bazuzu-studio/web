@@ -59,6 +59,7 @@ export interface RawContent {
       content?: {
         id: number | string;
         slug: string;
+        releaseStatus?: string | null;
         poster?: {
           id: number | string;
           url?: string | null;
@@ -137,6 +138,7 @@ function mapSeason(raw: RawSeason): Season {
     title: raw.title ?? undefined,
     releaseYear: raw.releaseYear ?? 0,
     slug: raw.content?.slug ?? "",
+    releaseStatus: parseReleaseStatus(raw.content?.releaseStatus),
     poster: raw.content?.poster ? mapMedia(raw.content.poster) : undefined,
     episodes: (raw.episodes?.docs ?? []).map(mapEpisode),
   };
