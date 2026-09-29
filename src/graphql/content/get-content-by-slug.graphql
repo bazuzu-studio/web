@@ -26,6 +26,7 @@ query GetContentBySlug($slug: String!) {
         slug
       }
       ageRating
+      releaseStatus
       playerLink
       seasons(sort: "seasonNumber") {
         docs {

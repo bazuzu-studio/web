@@ -1,160 +1,145 @@
 import { richTextToPlainText } from "./richtext";
-import type {
-ContentItem,
-Episode,
-Movie,
-Season,
-Series,
-} from "./types";
+import { parseReleaseStatus } from "./release-status";
+import type { ContentItem, Episode, Movie, Season, Series } from "./types";
 
 export interface RawContent {
-id: number;
-type: "movie" | "series";
+  id: number;
+  type: "movie" | "series";
 
-titleEn: string;
-titleRu: string;
-originalTitle?: string | null;
+  titleEn: string;
+  titleRu: string;
+  originalTitle?: string | null;
 
-slug: string;
-description?: unknown;
+  slug: string;
+  description?: unknown;
 
-releaseYear: number;
-duration?: number | null;
-rating?: number | null;
+  releaseYear: number;
+  duration?: number | null;
+  rating?: number | null;
 
-/** Возрастное ограничение (0/6/12/16/18). Источник: Kodik material_data.minimal_age. */
-ageRating?: number | null;
+  /** Возрастное ограничение (0/6/12/16/18). Источник: Kodik material_data.minimal_age. */
+  ageRating?: number | null;
 
+  /** Статус релиза из CMS (enum anons/ongoing/released). */
+  releaseStatus?: string | null;
 
-kinopoiskId?: string | null;
+  kinopoiskId?: string | null;
 
-/** Эмбед-ссылка на плеер фильма. Есть только у type: "movie". */
-playerLink?: string | null;
-
-poster?: {
-id: number | string;
-url?: string | null;
-} | null;
-
-backdrop?: {
-id: number | string;
-url?: string | null;
-} | null;
-
-genres?: {
-id: number;
-title: string;
-slug: string;
-}[] | null;
-
-seasons?: {
-docs: {
-id: number;
-
-
-  /** Может быть null из GraphQL/Payload. */
-  seasonNumber: number | null;
-
-  title?: string | null;
-  releaseYear?: number | null;
-
-  content?: {
-    id: number | string;
-    slug: string;
-    poster?: {
-      id: number | string;
-      url?: string | null;
-    } | null;
-  } | null;
+  /** Эмбед-ссылка на плеер фильма. Есть только у type: "movie". */
+  playerLink?: string | null;
 
   poster?: {
     id: number | string;
     url?: string | null;
   } | null;
 
-  episodes?: {
+  backdrop?: {
+    id: number | string;
+    url?: string | null;
+  } | null;
+
+  genres?:
+    | {
+        id: number;
+        title: string;
+        slug: string;
+      }[]
+    | null;
+
+  seasons?: {
     docs: {
       id: number;
-      episodeNumber: number;
-      title: string;
-      description?: unknown;
-      releaseDate?: string | null;
-      duration?: number | null;
 
-      /** Эмбед-ссылка на плеер конкретной серии. */
-      playerLink?: string | null;
+      /** Может быть null из GraphQL/Payload. */
+      seasonNumber: number | null;
+
+      title?: string | null;
+      releaseYear?: number | null;
+
+      content?: {
+        id: number | string;
+        slug: string;
+        poster?: {
+          id: number | string;
+          url?: string | null;
+        } | null;
+      } | null;
+
+      poster?: {
+        id: number | string;
+        url?: string | null;
+      } | null;
+
+      episodes?: {
+        docs: {
+          id: number;
+          episodeNumber: number;
+          title: string;
+          description?: unknown;
+          releaseDate?: string | null;
+          duration?: number | null;
+
+          /** Эмбед-ссылка на плеер конкретной серии. */
+          playerLink?: string | null;
+        }[];
+      } | null;
     }[];
   } | null;
-}[];
-
-
-} | null;
 }
 
 const EMPTY_MEDIA = {
-id: 0,
-url: "",
+  id: 0,
+  url: "",
 };
 
-type RawSeason = NonNullable<
-NonNullable<RawContent["seasons"]>["docs"]
+type RawSeason = NonNullable<NonNullable<RawContent["seasons"]>["docs"]>[number];
 
-> [number];
-
-type RawEpisode = NonNullable<
-NonNullable<RawSeason["episodes"]>["docs"]
-
-> [number];
+type RawEpisode = NonNullable<NonNullable<RawSeason["episodes"]>["docs"]>[number];
 
 function mapMedia(
-raw:
-| {
-id: number | string;
-url?: string | null;
-}
-| null
-| undefined,
+  raw:
+    | {
+        id: number | string;
+        url?: string | null;
+      }
+    | null
+    | undefined,
 ) {
-if (!raw) {
-return EMPTY_MEDIA;
-}
+  if (!raw) {
+    return EMPTY_MEDIA;
+  }
 
-return {
-id: raw.id,
-url: raw.url ?? "",
-};
+  return {
+    id: raw.id,
+    url: raw.url ?? "",
+  };
 }
 
 function mapEpisode(raw: RawEpisode): Episode {
-return {
-id: raw.id,
-episodeNumber: raw.episodeNumber,
-title: raw.title ?? `Серия ${raw.episodeNumber}`,
-description: richTextToPlainText(raw.description),
-releaseDate: raw.releaseDate ?? "",
-duration: raw.duration ?? 0,
-embedUrl: raw.playerLink ?? undefined,
-};
+  return {
+    id: raw.id,
+    episodeNumber: raw.episodeNumber,
+    title: raw.title ?? `Серия ${raw.episodeNumber}`,
+    description: richTextToPlainText(raw.description),
+    releaseDate: raw.releaseDate ?? "",
+    duration: raw.duration ?? 0,
+    embedUrl: raw.playerLink ?? undefined,
+  };
 }
 
 function mapSeason(raw: RawSeason): Season {
-// GraphQL может вернуть null, но приложение ожидает number.
-const seasonNumber =
-typeof raw.seasonNumber === "number"
-? raw.seasonNumber
-: 1;
+  // GraphQL может вернуть null, но приложение ожидает number.
+  const seasonNumber = typeof raw.seasonNumber === "number" ? raw.seasonNumber : 1;
 
-return {
-id: raw.id,
-seasonNumber,
-title: raw.title ?? undefined,
-releaseYear: raw.releaseYear ?? 0,
-slug: raw.content?.slug ?? "",
-poster: raw.content?.poster
-? mapMedia(raw.content.poster)
-: undefined,
-episodes: (raw.episodes?.docs ?? []).map(mapEpisode),
-};
+  return {
+    id: raw.id,
+    seasonNumber,
+    title: raw.title ?? undefined,
+    releaseYear: raw.releaseYear ?? 0,
+    slug: raw.content?.slug ?? "",
+    poster: raw.content?.poster ? mapMedia(raw.content.poster) : undefined,
+    episodes: (raw.episodes?.docs ?? []).map(mapEpisode),
+  };
 }
 
 /**
@@ -162,7 +147,7 @@ episodes: (raw.episodes?.docs ?? []).map(mapEpisode),
 * Порог рейтинга, начиная с которого контент считается
 * популярным на главной.
   */
-  const POPULAR_RATING_THRESHOLD = 7.5;
+const POPULAR_RATING_THRESHOLD = 7.5;
 
 /**
 
@@ -171,7 +156,7 @@ episodes: (raw.episodes?.docs ?? []).map(mapEpisode),
 * Например, при текущем 2026 году:
 * 2026 и 2025 считаются новыми.
   */
-  const NEW_ARRIVAL_YEARS_WINDOW = 1;
+const NEW_ARRIVAL_YEARS_WINDOW = 1;
 
 function mapBaseFields(raw: RawContent) {
   const currentYear = new Date().getFullYear();
@@ -188,6 +173,7 @@ function mapBaseFields(raw: RawContent) {
     genreIds: (raw.genres ?? []).map((genre) => Number(genre.id)),
     rating: raw.rating ?? 0,
     ageRating: raw.ageRating ?? undefined,
+    releaseStatus: parseReleaseStatus(raw.releaseStatus),
     isNew:
       typeof raw.releaseYear === "number"
         ? currentYear - raw.releaseYear <= NEW_ARRIVAL_YEARS_WINDOW
@@ -201,7 +187,6 @@ function mapBaseFields(raw: RawContent) {
     playerLink: raw.playerLink ?? "",
   };
 }
-
 
 /**
 
@@ -238,47 +223,42 @@ export interface RawSearchResult {
   } | null;
 }
 
+export function mapSearchResultToItem(raw: RawSearchResult): ContentItem {
+  const base = {
+    id: Number(raw.id),
+    titleRu: raw.title ?? "",
+    titleEn: raw.titleEn ?? "",
+    slug: raw.slug ?? "",
+    description: "",
+    releaseYear: raw.releaseYear ?? 0,
+    genres: [],
+    genreIds: [],
+    rating: raw.rating ?? 0,
+    ageRating: undefined,
+    poster: mapMedia(raw.poster),
+    backdrop: EMPTY_MEDIA,
+    // Добавляем обязательное поле playerLink (берём из raw, если есть, иначе пустая строка)
+    playerLink: raw.playerLink ?? "",
+  };
 
-export function mapSearchResultToItem(
-raw: RawSearchResult,
-): ContentItem {
-const base = {
-  id: Number(raw.id),
-  titleRu: raw.title ?? "",
-  titleEn: raw.titleEn ?? "",
-  slug: raw.slug ?? "",
-  description: "",
-  releaseYear: raw.releaseYear ?? 0,
-  genres: [],
-  genreIds: [],
-  rating: raw.rating ?? 0,
-  ageRating: undefined,
-  poster: mapMedia(raw.poster),
-  backdrop: EMPTY_MEDIA,
-  // Добавляем обязательное поле playerLink (берём из raw, если есть, иначе пустая строка)
-  playerLink: raw.playerLink ?? "",
-};
+  if (raw.type === "series") {
+    return {
+      ...base,
+      type: "series",
+      seasons: [],
+      // Теперь playerLink уже есть в base, можно не дублировать.
+      // Если логика требует переопределения — оставьте явное присваивание здесь.
+    };
+  }
 
-if (raw.type === "series") {
   return {
     ...base,
-    type: "series",
-    seasons: [],
-    // Теперь playerLink уже есть в base, можно не дублировать.
-    // Если логика требует переопределения — оставьте явное присваивание здесь.
+    type: "movie",
+    duration: 0,
   };
 }
 
-return {
-...base,
-type: "movie",
-duration: 0,
-};
-}
-
-export function mapContentToItem(
-  raw: RawContent,
-): ContentItem {
+export function mapContentToItem(raw: RawContent): ContentItem {
   const base = mapBaseFields(raw);
 
   if (raw.type === "movie") {
@@ -308,5 +288,3 @@ export function mapContentToItem(
   // fallback, если type не распознан (чтобы функция всегда возвращала ContentItem)
   return base as ContentItem;
 }
-
-

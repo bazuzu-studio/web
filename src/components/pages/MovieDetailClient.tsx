@@ -7,7 +7,7 @@ import { ArrowLeft, Calendar, Clock, Film, Bookmark, BookmarkCheck, Play } from 
 import type { Movie, ContentItem } from "@/lib/types";
 import { formatDuration } from "@/lib/utils";
 import { Btn } from "@/components/ui/Btn";
-import { Badge, GenreChip, StarRating } from "@/components/ui/Meta";
+import { Badge, GenreChip, ReleaseStatusBadge, StarRating } from "@/components/ui/Meta";
 import { MovieCard } from "@/components/content/MovieCard";
 import { VideoPlayer } from "@/components/content/VideoPlayer";
 import { AgeGate } from "@/components/content/AgeGate";
@@ -71,6 +71,7 @@ export function MovieDetailClient({ movie, similar }: { movie: Movie; similar: C
           <div className="flex-1 text-center md:text-left">
             <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-3">
               {movie.isNew && <Badge variant="new">НОВИНКА</Badge>}
+              <ReleaseStatusBadge status={movie.releaseStatus} />
               {movie.genres.map((g) => (
                 <GenreChip key={g} label={g} />
               ))}

@@ -12,6 +12,8 @@ interface HomeClientProps {
   popular: ContentItem[];
   movies: ContentItem[];
   series: ContentItem[];
+  /** Сериалы со статусом «выходит». */
+  ongoing?: ContentItem[];
   newArrivals: ContentItem[];
 }
 
@@ -20,6 +22,7 @@ export function HomeClient({
   popular,
   movies,
   series,
+  ongoing = [],
   newArrivals,
 }: HomeClientProps) {
   if (
@@ -40,6 +43,14 @@ export function HomeClient({
 
       <div className="mt-10 space-y-2">
         <ContinueWatching />
+
+        {ongoing.length > 0 && (
+          <ContentRow
+            title="Сейчас выходит"
+            items={ongoing}
+            href="/catalog?type=series&status=ongoing"
+          />
+        )}
 
         {popular.length > 0 && (
           <ContentRow

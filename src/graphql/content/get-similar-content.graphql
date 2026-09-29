@@ -26,6 +26,7 @@ query GetSimilarContent($genreIds: [JSON!], $excludeId: Int!, $limit: Int!) {
         slug
       }
       ageRating
+      releaseStatus
     }
   }
 }

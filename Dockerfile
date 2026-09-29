@@ -7,7 +7,8 @@ WORKDIR /app
 # ---------- зависимости ----------
 FROM base AS deps
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --no-frozen-lockfile
+# --frozen-lockfile: сборка образа ставит ровно те версии, что проверил CI.
+RUN pnpm install --frozen-lockfile
 
 # ---------- сборка ----------
 FROM base AS builder

@@ -27,11 +27,17 @@ import { ContentGrid } from "@/components/content/ContentGrid";
 import { CatalogFilterBar } from "@/components/pages/catalog/CatalogFilterBar";
 import { CatalogFilterDrawer } from "@/components/pages/catalog/CatalogFilterDrawer";
 import {
-  SORT_OPTIONS,
-  YEAR_OPTIONS,
+  DEFAULT_AGE,
+  DEFAULT_SORT,
+  DEFAULT_STATUS,
+  DEFAULT_YEAR,
+  STATUS_TO_API,
+  type AgeOption,
   type SortOption,
+  type StatusOption,
   type TypeFilter,
   type YearOption,
+  statusUrlValue,
   useCatalogFilters,
 } from "@/hooks/useCatalogFilters";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -48,7 +54,6 @@ const TYPE_OPTIONS = [
 const SORT_MAP: Record<SortOption, string> = {
   Популярные: "popular",
   Новинки: "newest",
-  "По рейтингу": "rating",
   "По алфавиту": "alphabetical",
 };
 
@@ -68,6 +73,56 @@ interface CatalogClientProps {
   totalDocs?: number;
   hasNextPage?: boolean;
   type?: "movie" | "series";
+  /** Статус из ?status= (anons / ongoing / released), с которым отрендерен SSR. */
+  status?: string;
+}
+
+interface CatalogQuery {
+  typeFilter: TypeFilter;
+  genre: string;
+  year: YearOption;
+  age: AgeOption;
+  status: StatusOption;
+  sort: SortOption;
+  searchVal: string;
+}
+
+/** Единое место сборки query-параметров для /api/content (первая страница и «Показать ещё»). */
+function buildContentParams(page: number, query: CatalogQuery): URLSearchParams {
+  const params = new URLSearchParams();
+  params.set("page", String(page));
+  params.set("limit", "50");
+
+  if (query.typeFilter === "movie" || query.typeFilter === "series") {
+    params.set("type", query.typeFilter);
+  }
+
+  if (query.genre !== "Все") {
+    params.set("genre", query.genre);
+  }
+
+  const apiYear = YEAR_MAP[query.year];
+  if (apiYear) {
+    params.set("year", apiYear);
+  }
+
+  // Возраст передаётся как ?age=12 (число без плюса): "12+" -> "12"
+  if (query.age !== "Все") {
+    params.set("age", query.age.replace("+", ""));
+  }
+
+  const apiStatus = STATUS_TO_API[query.status];
+  if (apiStatus) {
+    params.set("status", apiStatus);
+  }
+
+  params.set("sort", SORT_MAP[query.sort]);
+
+  if (query.searchVal) {
+    params.set("search", query.searchVal);
+  }
+
+  return params;
 }
 
 interface ContentApiResponse {
@@ -85,6 +140,7 @@ export function CatalogClient({
   totalDocs: initialTotalDocs = initialItems.length,
   hasNextPage: initialHasNextPage = false,
   type: initialType,
+  status: initialStatus,
 }: CatalogClientProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -101,8 +157,10 @@ export function CatalogClient({
   const [loadingMore, setLoadingMore] = useState(false);
 
   const requestIdRef = useRef(0);
+  const isFirstFetchRef = useRef(true);
 
   const urlType = searchParams.get("type");
+  const urlStatus = searchParams.get("status");
 
   const normalizedUrlType: TypeFilter =
     urlType === "movie" || urlType === "series" ? urlType : "all";
@@ -128,6 +186,9 @@ export function CatalogClient({
     age,
     setAge,
 
+    status,
+    setStatus,
+
     sort,
     setSort,
 
@@ -139,8 +200,19 @@ export function CatalogClient({
     activeFilterCount,
   } = useCatalogFilters({
     initialType: urlType,
+    initialStatus: urlStatus,
     hasNextPage,
   });
+
+  const query: CatalogQuery = {
+    typeFilter,
+    genre,
+    year,
+    age,
+    status,
+    sort,
+    searchVal,
+  };
 
   /*
    * Серверные фильтры.
@@ -150,39 +222,35 @@ export function CatalogClient({
     const requestId = ++requestIdRef.current;
     const controller = new AbortController();
 
+    // При первом рендере фильтры (кроме type/status, с которыми уже отрендерен
+    // SSR) стоят по умолчанию — данные первой страницы уже пришли с сервера,
+    // повторный запрос к API не нужен.
+    const isFirstRun = isFirstFetchRef.current;
+    isFirstFetchRef.current = false;
+    if (
+      isFirstRun &&
+      genre === "Все" &&
+      year === DEFAULT_YEAR &&
+      age === DEFAULT_AGE &&
+      sort === DEFAULT_SORT &&
+      !searchVal
+    ) {
+      return;
+    }
+
     const timer = window.setTimeout(async () => {
       try {
         setLoading(true);
 
-        const params = new URLSearchParams();
-        params.set("page", "1");
-        params.set("limit", "50");
-
-        if (typeFilter === "movie" || typeFilter === "series") {
-          params.set("type", typeFilter);
-        }
-
-        if (genre !== "Все") {
-          params.set("genre", genre);
-        }
-
-        const apiYear = YEAR_MAP[year];
-        if (apiYear) {
-          params.set("year", apiYear);
-        }
-
-        // Возраст передаётся как ?age=12 (число без плюса)
-        if (age !== "Все") {
-          // Убираем '+' из значения (например, "12+" → "12")
-          const ageValue = age.replace("+", "");
-          params.set("age", ageValue);
-        }
-
-        params.set("sort", SORT_MAP[sort]);
-
-        if (searchVal) {
-          params.set("search", searchVal);
-        }
+        const params = buildContentParams(1, {
+          typeFilter,
+          genre,
+          year,
+          age,
+          status,
+          sort,
+          searchVal,
+        });
 
         const response = await fetch(`/api/content?${params.toString()}`, {
           signal: controller.signal,
@@ -220,25 +288,30 @@ export function CatalogClient({
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [typeFilter, genre, year, age, sort, searchVal]);
+  }, [typeFilter, genre, year, age, status, sort, searchVal]);
 
   /*
    * Синхронизация первоначальных props при смене type через URL.
    */
   const previousInitialTypeRef = useRef(initialType);
+  const previousInitialStatusRef = useRef(initialStatus);
 
   useEffect(() => {
-    if (previousInitialTypeRef.current === initialType) {
+    if (
+      previousInitialTypeRef.current === initialType &&
+      previousInitialStatusRef.current === initialStatus
+    ) {
       return;
     }
 
     previousInitialTypeRef.current = initialType;
+    previousInitialStatusRef.current = initialStatus;
 
     setItems(initialItems);
     setCurrentPage(1);
     setTotalDocs(initialTotalDocs);
     setHasNextPage(initialHasNextPage);
-  }, [initialItems, initialTotalDocs, initialHasNextPage, initialType]);
+  }, [initialItems, initialTotalDocs, initialHasNextPage, initialType, initialStatus]);
 
   /*
    * Загрузка следующей страницы с текущими фильтрами.
@@ -254,33 +327,7 @@ export function CatalogClient({
     try {
       setLoadingMore(true);
 
-      const params = new URLSearchParams();
-      params.set("page", String(nextPage));
-      params.set("limit", "50");
-
-      if (typeFilter === "movie" || typeFilter === "series") {
-        params.set("type", typeFilter);
-      }
-
-      if (genre !== "Все") {
-        params.set("genre", genre);
-      }
-
-      const apiYear = YEAR_MAP[year];
-      if (apiYear) {
-        params.set("year", apiYear);
-      }
-
-      if (age !== "Все") {
-        const ageValue = age.replace("+", "");
-        params.set("age", ageValue);
-      }
-
-      params.set("sort", SORT_MAP[sort]);
-
-      if (searchVal) {
-        params.set("search", searchVal);
-      }
+      const params = buildContentParams(nextPage, query);
 
       const response = await fetch(`/api/content?${params.toString()}`, {
         cache: "no-store",
@@ -319,6 +366,7 @@ export function CatalogClient({
     loadingMore,
     searchVal,
     sort,
+    status,
     typeFilter,
     year,
     age,
@@ -342,6 +390,27 @@ export function CatalogClient({
       router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
     },
     [pathname, router, searchParams, setType],
+  );
+
+  const updateStatusInUrl = useCallback(
+    (value: StatusOption) => {
+      setStatus(value);
+      setCurrentPage(1);
+
+      const params = new URLSearchParams(searchParams.toString());
+      const urlValue = statusUrlValue(value);
+
+      if (urlValue) {
+        params.set("status", urlValue);
+      } else {
+        params.delete("status");
+      }
+
+      const nextQuery = params.toString();
+
+      router.push(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+    },
+    [pathname, router, searchParams, setStatus],
   );
 
   const handleReset = useCallback(() => {
@@ -433,6 +502,8 @@ export function CatalogClient({
             onYearChange={setYear}
             age={age}
             onAgeChange={setAge}
+            status={status}
+            onStatusChange={updateStatusInUrl}
             sort={sort}
             onSortChange={setSort}
           />
@@ -520,6 +591,10 @@ export function CatalogClient({
         onYearChange={setYear}
         age={age}
         onAgeChange={setAge}
+        status={status}
+        onStatusChange={updateStatusInUrl}
+        sort={sort}
+        onSortChange={setSort}
       />
     </div>
   );

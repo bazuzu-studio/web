@@ -8,7 +8,7 @@ import { ArrowLeft, Calendar, Tv, Bookmark, BookmarkCheck, Film, Play, ChevronLe
 import type { Series, ContentItem, Episode } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Btn } from "@/components/ui/Btn";
-import { Badge, GenreChip, StarRating } from "@/components/ui/Meta";
+import { Badge, GenreChip, ReleaseStatusBadge, StarRating } from "@/components/ui/Meta";
 import { MovieCard } from "@/components/content/MovieCard";
 import { EpisodeGrid } from "@/components/content/EpisodeGrid";
 import { VideoPlayer } from "@/components/content/VideoPlayer";
@@ -227,6 +227,7 @@ export function SeriesDetailClient({
             <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-3">
               <Badge variant="series">СЕРИАЛ</Badge>
               {series.isNew && <Badge variant="new">НОВИНКА</Badge>}
+              <ReleaseStatusBadge status={series.releaseStatus} showReleased />
               {series.genres.map((g, idx) => (
                 <GenreChip key={idx} label={g} />
               ))}
@@ -309,6 +310,12 @@ export function SeriesDetailClient({
               <Film className="h-6 w-6 text-[#EF4A4F]" />
               Смотреть онлайн
             </h2>
+
+            {series.releaseStatus === "ongoing" && (
+              <p className="-mt-2 mb-4 text-sm text-[#8E8E98]">
+                Сериал ещё выходит — новые серии появляются по мере выхода.
+              </p>
+            )}
 
             {/* Сезоны — горизонтальная лента, работает и на телефоне */}
             {series.seasons.length > 1 && (

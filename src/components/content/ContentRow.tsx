@@ -1,11 +1,21 @@
 "use client";
 
 import React, { useRef } from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ContentItem } from "@/lib/types";
 import { MovieCard } from "./MovieCard";
 
-export function ContentRow({ title, items }: { title: string; items: ContentItem[] }) {
+export function ContentRow({
+  title,
+  items,
+  href,
+}: {
+  title: string;
+  items: ContentItem[];
+  /** Ссылка «Смотреть все» (например, на каталог с фильтром). */
+  href?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const scroll = (dir: -1 | 1) => ref.current?.scrollBy({ left: dir * 280, behavior: "smooth" });
 
@@ -15,6 +25,14 @@ export function ContentRow({ title, items }: { title: string; items: ContentItem
     <section className="mb-8 sm:mb-12 mx-auto max-w-[1440px]">
       <div className="flex items-center justify-between mb-3 sm:mb-5 px-4 sm:px-6 lg:px-8">
         <h2 className="text-lg sm:text-xl font-bold text-white">{title}</h2>
+        {href && (
+          <Link
+            href={href}
+            className="ml-auto mr-3 text-sm text-[#8E8E98] transition-colors hover:text-white"
+          >
+            Смотреть все
+          </Link>
+        )}
         <div className="hidden sm:flex gap-1">
           <button
             onClick={() => scroll(-1)}

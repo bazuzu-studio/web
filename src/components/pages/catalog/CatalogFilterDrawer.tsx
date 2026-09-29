@@ -8,8 +8,12 @@ import { Btn } from "@/components/ui/Btn";
 import {
   YEAR_OPTIONS,
   AGE_OPTIONS,
+  SORT_OPTIONS,
+  STATUS_OPTIONS,
   type YearOption,
   type AgeOption,
+  type SortOption,
+  type StatusOption,
 } from "@/hooks/useCatalogFilters";
 
 type Props = {
@@ -25,6 +29,12 @@ type Props = {
 
   age: AgeOption;
   onAgeChange: (value: AgeOption) => void;
+
+  status: StatusOption;
+  onStatusChange: (value: StatusOption) => void;
+
+  sort: SortOption;
+  onSortChange: (value: SortOption) => void;
 };
 
 export function CatalogFilterDrawer({
@@ -37,6 +47,10 @@ export function CatalogFilterDrawer({
   onYearChange,
   age,
   onAgeChange,
+  status,
+  onStatusChange,
+  sort,
+  onSortChange,
 }: Props) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -111,6 +125,21 @@ export function CatalogFilterDrawer({
           </button>
         </div>
 
+        {/* Статус релиза */}
+        <FilterSection label="Статус">
+          <div className="flex flex-wrap gap-2">
+            {STATUS_OPTIONS.map((option) => (
+              <FilterButton
+                key={option}
+                active={status === option}
+                onClick={() => onStatusChange(option)}
+              >
+                {option}
+              </FilterButton>
+            ))}
+          </div>
+        </FilterSection>
+
         {/* Жанр */}
         <FilterSection label="Жанр">
           <div className="flex flex-wrap gap-2">
@@ -165,6 +194,21 @@ export function CatalogFilterDrawer({
                 </FilterButton>
               );
             })}
+          </div>
+        </FilterSection>
+
+        {/* Сортировка (на телефоне раньше была недоступна) */}
+        <FilterSection label="Сортировка">
+          <div className="flex flex-wrap gap-2">
+            {SORT_OPTIONS.map((option) => (
+              <FilterButton
+                key={option}
+                active={sort === option}
+                onClick={() => onSortChange(option)}
+              >
+                {option}
+              </FilterButton>
+            ))}
           </div>
         </FilterSection>
 

@@ -5,6 +5,8 @@
 /*                                  Общие типы                               */
 /* -------------------------------------------------------------------------- */
 
+import type { ReleaseStatus } from "./release-status";
+
 export type ContentType = "movie" | "series";
 
 
@@ -92,6 +94,13 @@ export interface BaseContent {
    * 0 / 6 / 12 / 16 / 18.
    */
   ageRating?: number | null;
+
+  /**
+   * Статус релиза: anons / ongoing / released.
+   * undefined — статус неизвестен (например, в результатах поиска).
+   */
+  releaseStatus?: ReleaseStatus;
+
   playerLink:string;
   rating: number;
 

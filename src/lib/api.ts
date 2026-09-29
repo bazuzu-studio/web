@@ -19,6 +19,8 @@ import type {
   Genre,
 } from "./types";
 
+import type { ReleaseStatus } from "./release-status";
+
 const endpoint =
   process.env.GRAPHQL_API_URL ??
   process.env.NEXT_PUBLIC_GRAPHQL_API_URL ??
@@ -83,6 +85,8 @@ export interface ContentListFilters {
     | "2022"
     | "2021-or-earlier";
   age?: "0" | "6" | "12" | "16" | "18";
+  /** Статус релиза: anons / ongoing / released. */
+  status?: ReleaseStatus;
   search?: string;
   sort?: ContentSort;
 }
@@ -158,6 +162,16 @@ function buildContentWhere(
     AND.push({
       ageRating: {
         greater_than_equal: minAge,
+      },
+    });
+  }
+
+  /* ------------------------------ Release status ---------------------------- */
+
+  if (filters.status) {
+    AND.push({
+      releaseStatus: {
+        equals: filters.status,
       },
     });
   }
@@ -262,10 +276,6 @@ async function getGenreIdByTitle(
     console.warn(`Invalid genre ID for ${title}:`, genre.id);
     return undefined;
   }
-
-  console.log(
-    `Genre ${title} resolved to ID ${id}`,
-  );
 
   return id;
 }
