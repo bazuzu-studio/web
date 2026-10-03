@@ -131,7 +131,13 @@ export async function GET(request: NextRequest) {
       filters,
     );
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        // Данные и так кэшируются в Next (revalidate 60 + тег content);
+        // даём то же самое CDN/браузеру.
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    });
   } catch (error) {
     console.error(
       "GET /api/content failed",

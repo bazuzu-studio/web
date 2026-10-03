@@ -23,12 +23,13 @@ ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
     NEXT_PUBLIC_GRAPHQL_API_URL=$NEXT_PUBLIC_GRAPHQL_API_URL \
     S3_PUBLIC_URL=$S3_PUBLIC_URL
 
-# Типы GraphQL: лучше закоммитить src/generated/graphql.ts (pnpm codegen локально).
-# Если файла нет, пробуем сгенерировать из CMS (в продакшене у Payload обычно
-# отключена интроспекция, поэтому это запасной вариант).
+# Типы GraphQL: лучше закоммитить src/generated/graphql.ts (pnpm codegen локально
+# против запущенной локально CMS). Если файла нет, пробуем сгенерировать из CMS,
+# но в production интроспекция в CMS выключена по умолчанию (включается
+# переменной GRAPHQL_INTROSPECTION=true), поэтому это только запасной вариант.
 RUN if [ ! -f src/generated/graphql.ts ]; then \
       echo "src/generated/graphql.ts не найден — запускаю codegen"; \
-      pnpm codegen || { echo "ОШИБКА: codegen не сработал. Выполните 'pnpm codegen' локально и закоммитьте src/generated/graphql.ts"; exit 1; }; \
+      pnpm codegen || { echo "ОШИБКА: codegen не сработал (интроспекция в CMS выключена?). Выполните 'pnpm codegen' локально и закоммитьте src/generated/graphql.ts"; exit 1; }; \
     fi
 RUN pnpm build
 

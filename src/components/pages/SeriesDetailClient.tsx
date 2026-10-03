@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Calendar, Tv, Bookmark, BookmarkCheck, Film, Play, ChevronLeft, ChevronRight, Clock } from "lucide-react";
-import type { Series, ContentItem, Episode } from "@/lib/types";
+import type { Series, ContentItem, Episode, Season } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Btn } from "@/components/ui/Btn";
 import { Badge, GenreChip, ReleaseStatusBadge, StarRating } from "@/components/ui/Meta";
@@ -32,15 +32,27 @@ export function SeriesDetailClient({
 
   const playerRef = useRef<HTMLDivElement>(null);
 
-  const activeSeason =
+  // Сезон, соответствующий открытой странице (каждый сезон — отдельная запись
+  // Content со своим slug).
+  const pageSeason =
     series.seasons.find((s) => s.slug === series.slug)?.seasonNumber ??
     series.seasons[0]?.seasonNumber ??
     1;
+
+  // Активный сезон хранится в состоянии: серии всех сезонов франшизы уже
+  // пришли с сервера, поэтому переключение не требует перехода на другую
+  // страницу (раньше — загрузка, скелетон и прыжок наверх).
+  const [activeSeason, setActiveSeason] = useState(pageSeason);
+  useEffect(() => setActiveSeason(pageSeason), [series.slug, pageSeason]);
 
   const currentSeason =
     series.seasons.find((s) => s.seasonNumber === activeSeason) ??
     series.seasons[0] ??
     { seasonNumber: activeSeason, episodes: [] as Episode[] };
+
+  // slug записи Content активного сезона: по нему хранятся «просмотренные»
+  // серии и ссылка «продолжить просмотр».
+  const seasonSlug = "slug" in currentSeason && currentSeason.slug ? currentSeason.slug : series.slug;
 
   const isFav = isFavorite(series.id);
 
@@ -67,7 +79,7 @@ export function SeriesDetailClient({
 
   /* --------------------------- Просмотренные серии -------------------------- */
 
-  const watchedKey = `watched:${series.slug}`;
+  const watchedKey = `watched:${seasonSlug}`;
   const [watched, setWatched] = useState<ReadonlySet<number>>(new Set());
 
   useEffect(() => {
@@ -124,7 +136,7 @@ export function SeriesDetailClient({
       setActiveEpisode(episode);
       markWatched(episode.episodeNumber);
       saveContinue({
-        slug: series.slug,
+        slug: seasonSlug,
         titleRu: series.titleRu,
         posterUrl: series.poster?.url || undefined,
         ageRating: series.ageRating,
@@ -132,8 +144,17 @@ export function SeriesDetailClient({
       });
       revealPlayer();
     },
-    [markWatched, revealPlayer, series.slug, series.titleRu, series.poster?.url, series.ageRating],
+    [markWatched, revealPlayer, seasonSlug, series.titleRu, series.poster?.url, series.ageRating],
   );
+
+  const selectSeason = useCallback((season: Season) => {
+    if (!season.slug) return;
+    setActiveSeason(season.seasonNumber);
+    setActiveEpisode(null);
+    // Адрес обновляем как у отдельной страницы сезона (обновление страницы и
+    // «поделиться» работают), но без запроса к серверу.
+    window.history.replaceState(null, "", `/series/${season.slug}`);
+  }, []);
 
   const sortedEpisodes = useMemo(
     () => [...(currentSeason.episodes ?? [])].sort((a, b) => a.episodeNumber - b.episodeNumber),
@@ -318,7 +339,7 @@ export function SeriesDetailClient({
             )}
 
             {/* Связанные сезоны (отдельные записи франшизы) */}
-            <SeasonSwitcher seasons={series.seasons} activeSeason={activeSeason} />
+            <SeasonSwitcher seasons={series.seasons} activeSeason={activeSeason} onSelect={selectSeason} />
 
             {/* Плеер. На телефоне «прилипает» под шапкой, пока листаешь серии. */}
             <div

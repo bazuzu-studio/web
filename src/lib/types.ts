@@ -107,6 +107,9 @@ export interface BaseContent {
   playerLink:string;
   rating: number;
 
+  /** Идентификатор франшизы: записи с одинаковым значением — сезоны одного сериала. */
+  franchiseId?: string;
+
   poster: Media;
   backdrop: Media;
 

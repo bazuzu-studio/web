@@ -23,6 +23,7 @@ query GetSeasonsByContentIds($contentIds: [JSON]!) {
           playerLink
           description
           duration
+          airingAt
         }
       }
     }

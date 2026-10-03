@@ -4,29 +4,35 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Search as SearchIcon, X, Inbox } from "lucide-react";
-import { gqlClient } from "@/lib/graphql-client";
-import { SearchContentDocument, GetContentDocument } from "@/generated/graphql";
 import { EmptyState } from "@/components/ui/States";
 import { ContentGrid } from "@/components/content/ContentGrid";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
-import { mapSearchResultToItem, mapContentToItem, type RawContent } from "@/lib/content-mapper";
+import type { ContentItem } from "@/lib/types";
 
 /**
- * Поиск через коллекцию search-results (плагин @payloadcms/plugin-search),
- * а не через фильтрацию всего каталога на клиенте (прошлая версия получала
- * ВЕСЬ список items пропом и фильтровала в памяти — не масштабируется).
+ * Поиск по коллекции Content через /api/content?search=… (серверный роут
+ * фронтенда, см. src/app/api/content/route.ts). Раньше искали в индексе
+ * search-results плагина @payloadcms/plugin-search и добирали полные записи
+ * вторым запросом; но прямые вставки пайплайна в БД обходят хуки плагина, и
+ * импортированные тайтлы в индекс не попадали. Теперь поиск не зависит от
+ * индекса, идёт одним запросом, а ответ кэшируется на стороне Next.
  *
  * Debounce 400мс — не долбим сервер запросом на каждое нажатие клавиши.
- * Текущий запрос синхронизируется с URL (?q=...) через router.replace,
- * чтобы результаты поиска можно было передать по ссылке и работала
- * кнопка "назад" в браузере.
- *
- * TODO:
- * - На Postgres plugin-search не даёт полнотекстового ранжирования
- *   "из коробки" — это по сути contains-фильтр по денормализованной
- *   коллекции. Если понадобится релевантность/опечатки — потребуется
- *   отдельный tsvector + GIN-индекс поверх search-results.
+ * Текущий запрос синхронизируется с URL (?q=...), чтобы результаты поиска
+ * можно было передать по ссылке и работала кнопка "назад" в браузере.
  */
+interface SearchApiResponse {
+  items: ContentItem[];
+  totalDocs: number;
+}
+
+async function fetchSearch(query: string, signal?: AbortSignal): Promise<SearchApiResponse> {
+  const params = new URLSearchParams({ search: query, limit: "50" });
+  const response = await fetch(`/api/content?${params.toString()}`, { signal });
+  if (!response.ok) throw new Error(`Search request failed: ${response.status}`);
+  return (await response.json()) as SearchApiResponse;
+}
+
 export function SearchClient({ initialQuery }: { initialQuery: string }) {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(initialQuery);
@@ -48,48 +54,14 @@ export function SearchClient({ initialQuery }: { initialQuery: string }) {
 
   const trimmedQuery = debouncedQuery.trim();
 
-const { data, isLoading, isFetching } = useQuery({
-  queryKey: ["search-content", trimmedQuery],
-  queryFn: () =>
-    gqlClient.request(SearchContentDocument, {
-      where: {
-        OR: [
-          { title: { contains: trimmedQuery } },
-          { titleEn: { contains: trimmedQuery } },
-        ],
-      },
-    }),
-  enabled: trimmedQuery.length > 0,
-  staleTime: 10_000,
-});
-  // SearchResults.docs — документы плагина поиска, а не Content: в них нет
-  // ageRating, а id — это id поискового документа, не контента (с ним «в
-  // избранное» из поиска сохраняло бы не тот id). Поэтому по slug'ам найденного
-  // добираем полные записи из Content и отдаём их, сохраняя порядок поиска.
-  const searchItems = useMemo(
-    () => (data?.SearchResults?.docs ?? []).map(mapSearchResultToItem),
-    [data]
-  );
-  const slugs = useMemo(
-    () => searchItems.map((i) => i.slug).filter(Boolean),
-    [searchItems]
-  );
-  const { data: full } = useQuery({
-    queryKey: ["search-content-full", slugs],
-    queryFn: () =>
-      gqlClient.request(GetContentDocument, { limit: 50, where: { slug: { in: slugs } } }),
-    enabled: slugs.length > 0,
-    staleTime: 60_000,
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["search-content", trimmedQuery],
+    queryFn: ({ signal }) => fetchSearch(trimmedQuery, signal),
+    enabled: trimmedQuery.length > 0,
+    staleTime: 30_000,
   });
-  const results = useMemo(() => {
-    const bySlug = new Map(
-      (full?.Contents?.docs ?? []).map((d) => {
-        const item = mapContentToItem(d as RawContent);
-        return [item.slug, item] as const;
-      })
-    );
-    return searchItems.map((i) => bySlug.get(i.slug) ?? i);
-  }, [searchItems, full]);
+
+  const results = useMemo(() => data?.items ?? [], [data]);
   const showLoading = isLoading || (isFetching && trimmedQuery !== query.trim());
 
   return (

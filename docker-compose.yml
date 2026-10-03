@@ -16,6 +16,9 @@ services:
       # адрес GraphQL для серверных запросов (SSR). По умолчанию — тот же публичный,
       # можно указать внутренний адрес CMS в сети dokploy-network.
       GRAPHQL_API_URL: ${GRAPHQL_API_URL:-${NEXT_PUBLIC_GRAPHQL_API_URL}}
+      # Секрет для POST /api/revalidate (мгновенный сброс кэша из CMS/пайплайна).
+      # Должен совпадать с REVALIDATE_SECRET в окружении CMS. Пусто — роут отключён.
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
     expose:
       - 3000
     healthcheck:

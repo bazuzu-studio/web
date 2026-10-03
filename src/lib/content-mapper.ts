@@ -1,5 +1,6 @@
 import { richTextToPlainText } from "./richtext";
 import { parseReleaseStatus } from "./release-status";
+import { episodeReleaseDate, episodeTitle } from "./episode";
 import type { ContentItem, Episode, Movie, Season, Series } from "./types";
 
 export interface RawContent {
@@ -24,6 +25,9 @@ export interface RawContent {
   releaseStatus?: string | null;
 
   kinopoiskId?: string | null;
+
+  /** Идентификатор франшизы (см. CMS: content.franchiseId). */
+  franchiseId?: string | null;
 
   /** Эмбед-ссылка на плеер фильма. Есть только у type: "movie". */
   playerLink?: string | null;
@@ -78,6 +82,8 @@ export interface RawContent {
           title: string;
           description?: unknown;
           releaseDate?: string | null;
+          /** Время выхода серии, Unix-секунды (поле CMS episodes.airingAt). */
+          airingAt?: number | null;
           duration?: number | null;
 
           /** Эмбед-ссылка на плеер конкретной серии. */
@@ -120,9 +126,9 @@ function mapEpisode(raw: RawEpisode): Episode {
   return {
     id: raw.id,
     episodeNumber: raw.episodeNumber,
-    title: raw.title ?? `Серия ${raw.episodeNumber}`,
+    title: episodeTitle(raw.title, raw.episodeNumber),
     description: richTextToPlainText(raw.description),
-    releaseDate: raw.releaseDate ?? "",
+    releaseDate: episodeReleaseDate(raw.airingAt, raw.releaseDate),
     duration: raw.duration ?? 0,
     embedUrl: raw.playerLink ?? undefined,
   };
@@ -184,6 +190,7 @@ function mapBaseFields(raw: RawContent) {
     poster: mapMedia(raw.poster),
     backdrop: mapMedia(raw.backdrop),
     kinopoiskId: raw.kinopoiskId ?? undefined,
+    franchiseId: raw.franchiseId ?? undefined,
     // Это поле теперь обязательно в типах Movie/Series — добавляем его сюда,
     // чтобы не дублировать в каждой ветке маппера.
     playerLink: raw.playerLink ?? "",

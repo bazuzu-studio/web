@@ -32,9 +32,17 @@ const nextConfig = {
       headers: [
         {
           key: "Content-Security-Policy",
-          // Синхронно с ALLOWED_EMBED_HOSTS в src/lib/embed-allowlist.ts
+          // frame-src — синхронно с ALLOWED_EMBED_HOSTS в src/lib/embed-allowlist.ts.
+          // frame-ancestors запрещает встраивать сайт чужим страницам,
+          // base-uri/object-src закрывают подмену <base> и плагины.
           value:
-            "frame-src 'self' kodikplayer.com embed.kinobox.ru video.collabs.ru;",
+            "frame-src 'self' kodikplayer.com embed.kinobox.ru video.collabs.ru; frame-ancestors 'self'; base-uri 'self'; object-src 'none';",
+        },
+        { key: "X-Content-Type-Options", value: "nosniff" },
+        { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        {
+          key: "Permissions-Policy",
+          value: "camera=(), microphone=(), geolocation=()",
         },
       ],
     },

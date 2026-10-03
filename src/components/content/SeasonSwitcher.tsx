@@ -13,6 +13,12 @@ interface SeasonSwitcherProps {
   seasons: Season[];
   /** Номер сезона, который сейчас открыт. */
   activeSeason: number;
+  /**
+   * Переключение сезона без перехода на другую страницу: серии всех сезонов
+   * франшизы уже загружены вместе с текущей страницей. Если не передан —
+   * карточки работают как обычные ссылки.
+   */
+  onSelect?: (season: Season) => void;
 }
 
 /**
@@ -23,7 +29,7 @@ interface SeasonSwitcherProps {
  * («Выходит»). Лента прокручивается по горизонтали; открытый сезон
  * автоматически центрируется, чтобы на телефоне он не терялся за краем.
  */
-export function SeasonSwitcher({ seasons, activeSeason }: SeasonSwitcherProps) {
+export function SeasonSwitcher({ seasons, activeSeason, onSelect }: SeasonSwitcherProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const activeRef = useRef<HTMLLIElement>(null);
 
@@ -69,6 +75,15 @@ export function SeasonSwitcher({ seasons, activeSeason }: SeasonSwitcherProps) {
               <Link
                 href={href}
                 scroll={false}
+                onClick={(event) => {
+                  // href остаётся для поисковиков, «открыть в новой вкладке» и
+                  // средней кнопки; обычный клик переключает сезон на месте —
+                  // без загрузки страницы, скелетона и прыжка наверх.
+                  if (!onSelect || !season.slug) return;
+                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+                  event.preventDefault();
+                  if (!isActive) onSelect(season);
+                }}
                 aria-current={isActive ? "true" : undefined}
                 title={hasCustomTitle ? season.title : undefined}
                 className={cn(

@@ -148,3 +148,51 @@ apps/web/
 ## Изображения
 
 `next.config.mjs` разрешает загрузку изображений с `images.unsplash.com`, `localhost` (dev) и с домена из переменной `S3_PUBLIC_URL` (публичный адрес S3/MinIO, задаётся при сборке — см. `.env.example`).
+
+
+---
+
+## Обновление 2026-10-03: связка с CMS
+
+Порядок выкатки: **сначала CMS** (миграция добавляет `content.franchiseId`,
+который теперь запрашивает фронтенд), затем этот проект.
+
+- **Сезоны франшизы** группируются по `franchiseId` (если не задан — по
+  `kinopoiskId`, как раньше). Серии всех сезонов приходят с сервера одним
+  запросом, поэтому переключение сезонов в `SeasonSwitcher` теперь происходит
+  на месте, без загрузки страницы и скелетона; URL меняется на `/series/<slug сезона>`
+  через `history.replaceState`.
+- **Дата выхода серии** берётся из `episodes.airingAt` (Unix-секунды), а
+  служебное название «Эпизод» (значение по умолчанию в CMS) заменяется на
+  «Серия N» — см. `src/lib/episode.ts`.
+- **Поиск** больше не использует индекс `search-results`: `SearchClient`
+  ходит в `/api/content?search=…` (поиск по `Content`), результаты кэшируются
+  Next. Прямые вставки пайплайна в БД теперь находятся сразу.
+- **Сортировки**: «Популярные» исключают тайтлы без рейтинга (Postgres ставит
+  NULL первыми при DESC), «Новинки» — `-releaseYear,-createdAt` вместо
+  `-updatedAt` (см. `getContentSort` в `src/lib/api.ts`). «Похожие» сначала
+  берут тайтлы с рейтингом, остаток добирают без него.
+- **Кэш**: `POST /api/revalidate` с заголовком `x-revalidate-secret` сбрасывает
+  тег `content`. Задайте `REVALIDATE_SECRET` здесь и в CMS (там же
+  `REVALIDATE_URL`). Пайплайну после `sync` / `update-ongoing`:
+  `curl -X POST -H "x-revalidate-secret: $REVALIDATE_SECRET" https://otakuum.ru/api/revalidate`.
+- **sitemap.xml** запрашивает только `slug`/`type`/`updatedAt` постранично
+  (`getSitemapEntries`) и отдаёт `lastModified`.
+- **Вход**: после логина возвращает на страницу из `?next=`; при устаревшей
+  cookie `RequireAuth` ведёт на `/login?expired=1`, и middleware не зацикливает
+  редиректы между `/login` и `/profile`.
+- **Избранное**: ответ CMS «уже добавлен» (теперь ValidationError) считается
+  успехом — состояние синхронизируется, кнопка не откатывается.
+- **Заголовки безопасности** в `next.config.mjs`: `frame-ancestors`, `nosniff`,
+  `Referrer-Policy`, `Permissions-Policy`.
+
+### Нужно сделать вручную
+
+1. `pnpm codegen` (при запущенной локально новой CMS) и закоммитить
+   `src/generated/graphql.ts`. В этой версии файл поправлен вручную под два
+   изменённых запроса (`GetContentBySlug`, `GetSeasonsByContentIds`), а
+   `GetContentIdsByFranchise` и `GetSitemapEntries` описаны через `gql` в
+   `src/lib/api.ts` и от кодогенерации не зависят.
+2. Если файл `src/graphql/content/search-content.graphql` больше не нужен —
+   удалите его и перегенерируйте типы (поиск его не использует).
+

@@ -31,7 +31,10 @@ export function LoginClient() {
       // на стороне Payload — см. AuthContext.tsx
       await login(email, pass);
       toast.success("Добро пожаловать!");
-      router.push("/");
+      // Возвращаем на страницу, с которой выбросило на вход (?next=…).
+      // Принимаем только относительный путь на этом же сайте.
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.push(next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Неверный email или пароль");
     } finally {
